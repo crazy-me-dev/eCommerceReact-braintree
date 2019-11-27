@@ -99,7 +99,17 @@ exports.validateNewUser = user => {
       .required()
   });
 
-  return schema.validate(user);
+  const result = schema.validate(user);
+
+  if (result.error) {
+    let message = result.error.details[0].message;
+    if (message.includes("password")) {
+      message = "Password must be 6 characters and contains a digit";
+      result.error.details[0].message = message;
+    }
+  }
+
+  return result;
 };
 
 exports.validateUser = user => {
@@ -113,7 +123,15 @@ exports.validateUser = user => {
       .pattern(/\d/)
   });
 
-  return schema.validate(user);
+  const result = schema.validate(user);
+
+  if (result.error) {
+    let message = result.error.details[0].message;
+    if (message.includes("password")) {
+      message = "Password must be 6 characters and contains a digit";
+      result.error.details[0].message = message;
+    }
+  }
 };
 
 exports.User = mongoose.model("User", userSchema);

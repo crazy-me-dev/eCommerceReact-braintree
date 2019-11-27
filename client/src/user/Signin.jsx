@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import Layout from "../core/Layout";
-import { API_URL } from "../keys";
+
 const Signin = () => {
   const [values, setValues] = useState({
     name: "",

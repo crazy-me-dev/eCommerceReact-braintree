@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import axios from "axios";
 import { Link } from "react-router-dom";
+
+import { signup } from "../auth";
 import Layout from "../core/Layout";
 
 const Signup = () => {
@@ -12,7 +13,7 @@ const Signup = () => {
     success: false
   });
 
-  const { name, email, password } = values;
+  const { name, email, password, success, error } = values;
 
   const handleChange = event => {
     setValues({
@@ -22,58 +23,41 @@ const Signup = () => {
     });
   };
 
-  const handleSubmit = event => {
+  const handleSubmit = async event => {
     event.preventDefault();
-    signup({ name, email, password }).then(data => {
-      if (data) {
-        console.log("bloddy errors");
-      } else console.log("no errors");
-      // if (data.response) {
-      //   console.log("bloddy errros");
-      // } else console.log("no errors");
+    setValues({
+      ...values,
+      error: false
     });
-
-    // console.log(data);
-
-    // if (data.error) {
-    //   console.log("data.error");
-    // } else console.log("no errors");
-  };
-
-  const signup = user => {
-    return axios
-      .post("/api/signup", user)
-      .then(response => {
-        return response.json();
-      })
-      .catch(e => {
-        // console.log(error);
-        const error = { error: e.response };
-        return error;
+    const data = await signup({ name, email, password });
+    if (data.error) {
+      setValues({
+        ...values,
+        error: data.error,
+        success: false
       });
-
-    // return fetch(`api/signup`, {
-    //   method: "POST",
-    //   headers: {
-    //     Accept: "application/json",
-    //     "Content-Type": "application/json"
-    //   },
-    //   body: JSON.stringify(user)
-    // })
-    //   .then(response => {
-    //     return response.json();
-    //   })
-    //   .catch(err => {
-    //     console.log(err);
-    //   });
+    } else {
+      setValues({
+        ...values,
+        name: "",
+        email: "",
+        password: "",
+        error: "",
+        success: true
+      });
+    }
   };
-  const form = () => {
+
+  const signupForm = () => {
     return (
-      <div className="card bg-light">
-        <article className="card-body mx-auto" style={{ maxWidth: 400 }}>
-          <h4 className="card-title mt-3 text-center">Create Account</h4>
-          <p className="text-center">Get started with your free account</p>
-          <form>
+      <div className="container col-sm-6">
+        <article className="card bg-light">
+          <form className="card-body mx-auto">
+            <h4 className="card-title mt-3 text-center">Create Account</h4>
+            <p className="text-center">Get started with your free account</p>
+
+            {showError()}
+            {showSuccess()}
             <div className="form-group input-group">
               <div className="input-group-prepend">
                 <span className="input-group-text">
@@ -141,14 +125,30 @@ const Signup = () => {
       </div>
     );
   };
+
+  const showSuccess = () => (
+    <div
+      className="alert alert-info"
+      style={{ display: success ? "" : "none" }}
+    >
+      New Account has been created. Please <Link to="signin">Sign in</Link>
+    </div>
+  );
+  const showError = () => (
+    <div
+      className="alert alert-danger"
+      style={{ display: error ? "" : "none" }}
+    >
+      {error}
+    </div>
+  );
   return (
     <Layout
       title="Signup Page"
       description="Node React E-commerce App"
       className="container"
     >
-      {form()}
-      {JSON.stringify(values)}
+      {signupForm()}
     </Layout>
   );
 };

@@ -30,7 +30,8 @@ exports.errorHandler = error => {
     switch (error.code) {
       case 11000:
       case 11001:
-        message = { error: uniqueMessage(error), status: 400 };
+        // message = { error: uniqueMessage(error), status: 400 };
+        message = { error: "Email already Exists", status: 400 };
         break;
       default:
         message = { error: "" + error, status: 400 };
