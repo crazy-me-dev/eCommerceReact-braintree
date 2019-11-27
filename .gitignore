@@ -1,0 +1,6 @@
+node_modules
+.env
+dev.js
+coverage
+ecommerce.code-workspace
+jsconfig.json
