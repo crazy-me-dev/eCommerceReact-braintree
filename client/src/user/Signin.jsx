@@ -1,31 +1,48 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, Redirect } from "react-router-dom";
+
+import { signin, authenticate, isAuthenticated } from "../auth";
 import Layout from "../core/Layout";
 
 const Signin = () => {
   const [values, setValues] = useState({
-    name: "",
     email: "",
     password: "",
     error: "",
-    success: false
+    loading: false,
+    redirectToReferral: false
   });
 
-  const handleChange = event => {
-    setValues({
-      ...values,
-      error: false,
-      [event.target.name]: event.target.value
-    });
+  const { user } = isAuthenticated();
+
+  const { email, password, loading, error, redirectToReferral } = values;
+
+  const handleChange = e => {
+    setValues({ ...values, error: false, [e.target.name]: e.target.value });
   };
 
-  const form = () => {
-    return (
-      <div className="card bg-light">
-        <article className="card-body mx-auto" style={{ maxWidth: 400 }}>
-          <h4 className="card-title mt-3 text-center">Sign in</h4>
+  const handleSubmit = async event => {
+    event.preventDefault();
+    setValues({ ...values, error: false, loading: true });
+    const data = await signin({ email, password });
+    if (data.error) {
+      setValues({ ...values, error: data.error, loading: false });
+    } else {
+      authenticate(data, () => {
+        setValues({ ...values, redirectToReferral: true });
+      });
+    }
+  };
 
-          <form>
+  const signinForm = () => {
+    return (
+      <div className="container col-sm-6">
+        <article className="card bg-light">
+          <form className="card-body mx-auto">
+            <h4 className="card-title mt-3 text-center">Sign in</h4>
+
+            {showError()}
+            {showLoading()}
             <div className="form-group input-group">
               <div className="input-group-prepend">
                 <span className="input-group-text">
@@ -38,7 +55,8 @@ const Signin = () => {
                 placeholder="Email address"
                 type="email"
                 name="email"
-                onChange={event => handleChange(event)}
+                value={email}
+                onChange={handleChange}
               />
             </div>
 
@@ -54,22 +72,53 @@ const Signin = () => {
                 placeholder="Create password"
                 type="password"
                 name="password"
-                onChange={event => handleChange(event)}
+                value={password}
+                onChange={handleChange}
               />
             </div>
             <div className="form-group">
-              <button type="submit" className="btn btn-primary btn-block">
+              <button
+                type="submit"
+                className="btn btn-primary btn-block"
+                onClick={handleSubmit}
+              >
                 {" "}
                 Sign in{" "}
               </button>
             </div>
             <p className="text-center">
-              Don't have an account? <Link to="/signup">Sign Up</Link>{" "}
+              Dont Have an account? <Link to="/signup">Sign Up</Link>{" "}
             </p>
           </form>
         </article>
       </div>
     );
+  };
+
+  const showLoading = () =>
+    loading && (
+      <div className="alert alert-info">
+        <h2>Loading...</h2>
+      </div>
+    );
+  const showError = () => (
+    <div
+      className="alert alert-danger"
+      style={{ display: error ? "" : "none" }}
+    >
+      {error}
+    </div>
+  );
+
+  const redirectUser = () => {
+    if (redirectToReferral) {
+      if (user && user.role === 1) {
+        return <Redirect to="/admin/dashboard" />;
+      } else {
+        return <Redirect to="/user/dashboard" />;
+      }
+    }
+    if (user) return <Redirect to="/" />;
   };
 
   return (
@@ -78,7 +127,8 @@ const Signin = () => {
       description="Node React E-commerce App"
       className=" offset-2 container"
     >
-      {form()}
+      {signinForm()}
+      {redirectUser()}
     </Layout>
   );
 };

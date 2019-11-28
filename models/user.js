@@ -104,7 +104,7 @@ exports.validateNewUser = user => {
   if (result.error) {
     let message = result.error.details[0].message;
     if (message.includes("password")) {
-      message = "Password must be 6 characters and contains a digit";
+      message = "Password must be at least 6 characters and contains a digit";
       result.error.details[0].message = message;
     }
   }
@@ -128,7 +128,7 @@ exports.validateUser = user => {
   if (result.error) {
     let message = result.error.details[0].message;
     if (message.includes("password")) {
-      message = "Password must be 6 characters and contains a digit";
+      message = "Password must be at least 6 characters and contains a digit";
       result.error.details[0].message = message;
     }
   }

@@ -18,7 +18,7 @@ exports.read = (req, res) => {
 
 exports.update = async (req, res) => {
   const { error } = validateUser(req.body);
-  if (error) return res.status(400).send(error.details[0].message);
+  if (error) return res.status(400).json({ error: error.details[0].message });
 
   let user = await User.findOneAndUpdate(
     { _id: req.profile._id },

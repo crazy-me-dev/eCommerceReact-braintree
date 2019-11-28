@@ -32,7 +32,7 @@ exports.create = (req, res) => {
     }
 
     const { error } = validateProduct(fields);
-    if (error) return res.status(400).send(error.details[0].message);
+    if (error) return res.status(400).json({ error: error.details[0].message });
 
     let product = new Product(fields);
 
@@ -81,7 +81,7 @@ exports.update = async (req, res) => {
       });
     }
     const { error } = validateProduct(fields);
-    if (error) return res.status(400).send(error.details[0].message);
+    if (error) return res.status(400).json({ error: error.details[0].message });
 
     let product = req.product;
 
@@ -203,6 +203,6 @@ exports.photo = (req, res, next) => {
     res.set("Content-Type", req.product.photo.contentType);
     return res.send(req.product.photo.data);
   }
-  res.status(404).json({ message: "Product does not have image" });
+  res.status(404).json({ error: "Product does not have image" });
   next();
 };

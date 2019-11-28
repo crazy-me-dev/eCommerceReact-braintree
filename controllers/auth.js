@@ -1,11 +1,10 @@
 const keys = require("../config/keys");
-const jwt = require("jsonwebtoken");
 const expressJwt = require("express-jwt");
 
-const { User, validateNewUser } = require("../models/user");
+const { User, validateNewUser, validateUser } = require("../models/user");
 exports.signup = async (req, res) => {
   const { error } = validateNewUser(req.body);
-  if (error) return res.status(400).send(error.details[0].message);
+  if (error) return res.status(400).json({ error: error.details[0].message });
 
   let user = new User(req.body);
   user = await user.save();
@@ -15,9 +14,9 @@ exports.signup = async (req, res) => {
 };
 
 exports.signin = async (req, res) => {
-  const { email, password } = req.body;
+  const { email: incomingEmail, password } = req.body;
 
-  const user = await User.findOne({ email });
+  const user = await User.findOne({ email: incomingEmail });
 
   if (!user) {
     return res
@@ -39,9 +38,9 @@ exports.signin = async (req, res) => {
   res.cookie("token", token, { expire: new Date() + 9999 });
 
   //return response with user and token
-  const { _id, name, email: userEmail, role } = user;
+  const { _id, name, email, role } = user;
 
-  return res.json({ token, user: { _id, name, userEmail, role } });
+  return res.json({ token, user: { _id, name, email, role } });
 };
 
 exports.signout = (req, res) => {

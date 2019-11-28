@@ -9,8 +9,10 @@ module.exports = function(err, req, res, next) {
 
   //checking the status number to send a custom status number
   if (incomingError.status)
-    return res.status(incomingError.status).send(incomingError.error);
+    return res
+      .status(incomingError.status)
+      .json({ error: incomingError.error });
 
-  //no status sending internal error status code
-  res.status(500).send(err.message);
+  //no status. Sending internal error status code
+  res.status(500).json({ error: err.message });
 };

@@ -11,7 +11,7 @@ exports.list = async (req, res) => {
 
 exports.create = async (req, res) => {
   const { error } = validateCategory(req.body);
-  if (error) return res.status(400).send(error.details[0].message);
+  if (error) return res.status(400).json({ error: error.details[0].message });
 
   const category = new Category(req.body);
 
@@ -22,7 +22,7 @@ exports.create = async (req, res) => {
 
 exports.update = async (req, res) => {
   const { error } = validateCategory(req.body);
-  if (error) return res.status(400).send(error.details[0].message);
+  if (error) return res.status(400).json({ error: error.details[0].message });
   const category = req.category;
   category.name = req.body.name;
   const data = await category.save();

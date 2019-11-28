@@ -30,6 +30,7 @@ const Signup = () => {
       error: false
     });
     const data = await signup({ name, email, password });
+
     if (data.error) {
       setValues({
         ...values,
