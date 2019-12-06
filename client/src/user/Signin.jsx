@@ -77,11 +77,7 @@ const Signin = () => {
               />
             </div>
             <div className="form-group">
-              <button
-                type="submit"
-                className="btn btn-primary btn-block"
-                onClick={handleSubmit}
-              >
+              <button type="submit" className="btn btn-primary btn-block" onClick={handleSubmit}>
                 {" "}
                 Sign in{" "}
               </button>
@@ -102,10 +98,7 @@ const Signin = () => {
       </div>
     );
   const showError = () => (
-    <div
-      className="alert alert-danger"
-      style={{ display: error ? "" : "none" }}
-    >
+    <div className="alert alert-danger" style={{ display: error ? "" : "none" }}>
       {error}
     </div>
   );
