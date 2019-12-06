@@ -6,9 +6,10 @@ const uniqueMessage = error => {
   let output;
   try {
     let fieldName = error.message.substring(
-      error.message.lastIndexOf(".$") + 2,
+      error.message.lastIndexOf("index") + 7,
       error.message.lastIndexOf("_1")
     );
+
     output =
       fieldName.charAt(0).toUpperCase() +
       fieldName.slice(1) +
@@ -21,17 +22,16 @@ const uniqueMessage = error => {
 };
 
 /**
- * Get the erroror message from error object
+ * Get the error message from error object
  */
 exports.errorHandler = error => {
   let message = error.message;
-
+  console.log(message);
   if (error.code) {
     switch (error.code) {
       case 11000:
       case 11001:
-        // message = { error: uniqueMessage(error), status: 400 };
-        message = { error: "Email already Exists", status: 400 };
+        message = { error: uniqueMessage(error), status: 400 };
         break;
       default:
         message = { error: "" + error, status: 400 };

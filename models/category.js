@@ -7,7 +7,8 @@ const categorySchema = new mongoose.Schema(
       type: String,
       trim: true,
       required: true,
-      maxlength: 50
+      maxlength: 50,
+      unique: true
     }
   },
   //records timestamps automatically

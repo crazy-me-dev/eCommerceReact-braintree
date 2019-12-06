@@ -14,6 +14,7 @@ const {
   list,
   listRelated,
   listCategories,
+  listSearch,
   listBySearch,
   photo
 } = require("../controllers/product");
@@ -26,6 +27,7 @@ router.get("/product/photo/:productId", photo);
 router.get("/products", list);
 router.get("/products/related/:productId", listRelated);
 router.get("/products/categories", listCategories);
+router.get("/products/search", listSearch);
 
 /**
  * All POST routes
@@ -33,21 +35,9 @@ router.get("/products/categories", listCategories);
 router.post("/product/create/:userId", requireSignin, isAuth, isAdmin, create);
 router.post("/products/by/search", listBySearch);
 
-router.delete(
-  "/product/:productId/:userId",
-  requireSignin,
-  isAuth,
-  isAdmin,
-  remove
-);
+router.delete("/product/:productId/:userId", requireSignin, isAuth, isAdmin, remove);
 
-router.put(
-  "/product/:productId/:userId",
-  requireSignin,
-  isAuth,
-  isAdmin,
-  update
-);
+router.put("/product/:productId/:userId", requireSignin, isAuth, isAdmin, update);
 
 /**
  * All params

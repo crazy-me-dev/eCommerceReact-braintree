@@ -22,6 +22,8 @@ export const signin = async user => {
 
 export const authenticate = (data, next) => {
   if (typeof window !== "undefined") {
+    console.log("authenticate", data);
+
     localStorage.setItem("jwt", JSON.stringify(data));
     next();
   }

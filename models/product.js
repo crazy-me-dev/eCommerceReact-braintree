@@ -9,7 +9,7 @@ const productSchema = new mongoose.Schema(
       type: String,
       trim: true,
       required: true,
-      maxlength: 32
+      maxlength: 150
     },
     description: {
       type: String,
@@ -39,6 +39,10 @@ const productSchema = new mongoose.Schema(
       data: Buffer,
       contentType: String
     },
+    hasPhoto: {
+      type: Boolean,
+      default: false
+    },
     shipping: {
       required: false,
       type: Boolean
@@ -51,7 +55,7 @@ const productSchema = new mongoose.Schema(
 exports.validateProduct = product => {
   const schema = Joi.object({
     name: Joi.string()
-      .max(50)
+      .max(150)
       .required(),
     description: Joi.string()
       .max(2000)
