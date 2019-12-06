@@ -3,7 +3,7 @@ const fs = require("fs");
 const { Product, validateProduct } = require("../models/product");
 
 exports.productById = async (req, res, next, id) => {
-  const product = await Product.findById(id);
+  const product = await Product.findById(id).populate("category");
 
   if (!product) {
     return res.status(400).json({ error: "Product not found" });
@@ -47,6 +47,7 @@ exports.create = (req, res) => {
 
       product.photo.data = fs.readFileSync(files.photo.path);
       product.photo.contentType = files.photo.type;
+      product.hasPhoto = true;
     }
 
     try {
@@ -98,6 +99,7 @@ exports.update = async (req, res) => {
 
       product.photo.data = fs.readFileSync(files.photo.path);
       product.photo.contentType = files.photo.type;
+      product.hasPhoto = true;
     }
 
     try {
@@ -131,6 +133,24 @@ exports.list = async (req, res) => {
     .exec();
 
   res.json(products);
+};
+
+exports.listSearch = async (req, res) => {
+  // create query object to hold search value and category value
+  const query = {};
+
+  if (req.query.search) {
+    query.name = { $regex: req.query.search, $options: "i" };
+    if (req.query.category && req.query.category != "All") {
+      query.category = req.query.category;
+    }
+  } else if (req.query.category && req.query.category != "All") {
+    query.category = req.query.category;
+  }
+
+  const productList = await Product.find(query).select("-photo");
+
+  res.json(productList);
 };
 
 exports.listRelated = async (req, res) => {
@@ -175,12 +195,16 @@ exports.listBySearch = async (req, res) => {
   for (let key in req.body.filters) {
     if (req.body.filters[key].length > 0) {
       if (key === "price") {
-        // gte -  greater than price [0-10]
-        // lte - less than
-        findArgs[key] = {
-          $gte: req.body.filters[key][0],
-          $lte: req.body.filters[key][1]
-        };
+        //if length is 2 then there is pair range of prices
+        //if not then lets not set the args for price
+        if (req.body.filters[key].length === 2) {
+          // gte -  greater than price [0-10]
+          // lte - less than
+          findArgs[key] = {
+            $gte: parseInt(req.body.filters[key][0]),
+            $lte: parseInt(req.body.filters[key][1])
+          };
+        }
       } else {
         findArgs[key] = req.body.filters[key];
       }
@@ -195,7 +219,7 @@ exports.listBySearch = async (req, res) => {
     .limit(limit)
     .exec();
 
-  res.json({ size: data.length, data });
+  res.json(data);
 };
 
 exports.photo = (req, res, next) => {

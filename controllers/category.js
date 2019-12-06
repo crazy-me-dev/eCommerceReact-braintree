@@ -13,11 +13,11 @@ exports.create = async (req, res) => {
   const { error } = validateCategory(req.body);
   if (error) return res.status(400).json({ error: error.details[0].message });
 
-  const category = new Category(req.body);
+  let category = new Category(req.body);
 
-  const data = await category.save();
+  category = await category.save();
 
-  res.json({ data });
+  res.json({ category });
 };
 
 exports.update = async (req, res) => {
