@@ -154,8 +154,25 @@ body {
   display: block;
 }
 
+.payment-image {
+  height: 50px;
+  width: 100%;
+  object-fit: cover;
+  display: block;
+}
+
 .old-price {
   text-decoration: line-through;
+}
+
+.payment-card-height {
+  height: 100px;
+}
+
+@media (max-width: 767.98px) {
+  .payment-card-height {
+    height: 110px;
+  }
 }
 
 .card-size {
@@ -180,4 +197,11 @@ body {
 
 h1 .decimal {
   font-size: 23px;
+}
+.terms {
+  font-size: 0.8rem;
+}
+
+.terms button {
+  font-size: 0.8rem;
 }

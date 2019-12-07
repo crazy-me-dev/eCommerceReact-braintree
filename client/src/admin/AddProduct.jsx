@@ -1,9 +1,9 @@
 import React, { useState, useRef, useEffect } from "react";
-
+import { Link, Redirect } from "react-router-dom";
 import Layout from "../core/Layout";
 
 import { isAuthenticated } from "../auth";
-import { createProduct, getCategories } from "../admin/apiAdmin";
+import { createProduct, updateProduct, getCategories, getProduct } from "../admin/apiAdmin";
 
 const useFocus = () => {
   const htmlElRef = useRef(null);
@@ -13,18 +13,21 @@ const useFocus = () => {
   return [htmlElRef, setFocus];
 };
 
-const AddProduct = () => {
+const AddProduct = props => {
   const {
     user: { _id: userId, name: userName },
     token
   } = isAuthenticated();
   const [inputRef, setInputFocus] = useFocus();
 
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [redirect, setRedirect] = useState(false);
   const [values, setValues] = useState({
     name: "",
     description: "",
     categories: [],
     category: "",
+    categoryInput: "",
     shipping: "",
     price: "",
     quantity: "",
@@ -42,6 +45,7 @@ const AddProduct = () => {
     description,
     categories,
     category,
+    categoryInput,
     shipping,
     quantity,
     loading,
@@ -50,9 +54,61 @@ const AddProduct = () => {
     formData
   } = values;
 
+  const load = async () => {
+    const productId = props.match.params.productId ? props.match.params.productId : null;
+    let product;
+    if (productId) {
+      setIsUpdating(true);
+      product = await getProduct(productId);
+    }
+    const categoryList = await getCategories();
+    if (categoryList.error) {
+      setValues({ ...values, error: categoryList.error, loading: false });
+      return;
+    }
+    if (productId && product.error) {
+      setValues({ ...values, error: product.error, loading: false });
+      return;
+    }
+
+    let incomingData = undefined;
+    if (productId) incomingData = fillFormData(product);
+
+    setValues({
+      ...values,
+      categories: categoryList,
+      formData: productId ? incomingData : new FormData(),
+      categoryInput: productId ? product.category._id : "",
+      loading: false,
+      ...product
+    });
+  };
+
+  const fillFormData = product => {
+    return Object.keys(product).reduce((formData, key) => {
+      if (
+        key === "createdAt" ||
+        key === "updatedAt" ||
+        key === "_id" ||
+        key === "hasPhoto" ||
+        key === "sold" ||
+        key === "__v"
+      )
+        return formData;
+      else if (key === "category") formData.append(key, product[key]._id);
+      else formData.append(key, product[key]);
+
+      return formData;
+    }, new FormData());
+  };
+  useEffect(() => {
+    load();
+  }, []);
+
   const handleChange = event => {
     const value = event.target.name === "photo" ? event.target.files[0] : event.target.value;
-    formData.set(event.target.name, value);
+    if (event.target.name === "categoryInput") formData.set("category", value);
+    else formData.set(event.target.name, value);
     setValues({
       ...values,
       [event.target.name]: value,
@@ -62,20 +118,32 @@ const AddProduct = () => {
     });
   };
 
+  const shouldRedirect = () => {
+    if (redirect) return <Redirect to="/admin/product"></Redirect>;
+  };
+
   const handleSubmit = async event => {
     event.preventDefault();
     setValues({ ...values, error: "", loading: true, createdProduct: "" });
-    const data = await createProduct(formData, userId, token);
+    let data;
+    if (isUpdating) {
+      data = await updateProduct(formData, userId, token, values._id);
+      // console.log(values.formData);
+      // return;
+    } else data = await createProduct(formData, userId, token);
     if (data.error) {
       setValues({ ...values, error: data.error, loading: false });
     } else {
+      if (isUpdating) {
+        setRedirect(true);
+      }
       setValues({
         ...values,
         createdProduct: data.name,
         loading: false,
         name: "",
         description: "",
-        category: "",
+        categoryInput: "",
         shipping: "",
         price: "",
         quantity: "",
@@ -104,22 +172,18 @@ const AddProduct = () => {
     </div>
   );
 
-  const init = async () => {
-    const data = await getCategories();
-    if (data.error) {
-      setValues({ ...values, error: data.error });
-    } else {
-      setValues({ ...values, categories: data, formData: new FormData() });
-    }
-  };
-
-  useEffect(() => {
-    init();
-  }, []);
+  const goBack = () => (
+    <div className=" mt-5">
+      <Link to="/admin/product" className="text-warning">
+        Back to Product &larr;
+      </Link>
+    </div>
+  );
 
   const newProductForm = () => {
     return (
       <form className="card-body mx-auto">
+        {shouldRedirect()}
         <div className="form-group">
           <label htmlFor="name">Name</label>
           <input
@@ -150,12 +214,12 @@ const AddProduct = () => {
               Category
             </label>
             <select
-              name="category"
+              name="categoryInput"
               className="form-control"
-              value={category}
+              value={categoryInput}
               onChange={handleChange}
             >
-              <option>Please Select</option>
+              {!isUpdating ? <option>Please Select</option> : null}
               {categories &&
                 categories.map((c, i) => (
                   <option key={i} value={c._id}>
@@ -210,6 +274,7 @@ const AddProduct = () => {
             <input type="file" name="photo" accept="image/*" onChange={handleChange} id="photo" />
           </label>
         </div>
+        {goBack()}
 
         <div className="text-right">
           <button
@@ -218,7 +283,7 @@ const AddProduct = () => {
             type="submit"
             onClick={handleSubmit}
           >
-            Create
+            {isUpdating ? "Update" : "Create"}
           </button>
         </div>
       </form>
@@ -227,8 +292,8 @@ const AddProduct = () => {
 
   return (
     <Layout
-      title="Add Product"
-      description={`G'day ${userName}, ready to add a new product?`}
+      title={isUpdating ? "Update Product" : "Add Product"}
+      description={`G'day ${userName}, ready to ${isUpdating ? "update" : "add"} a product?`}
       className="container"
     >
       <div className="row">

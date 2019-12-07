@@ -58,8 +58,6 @@ const Search = () => {
   };
 
   const searchProduct = async (incomingCategory = category) => {
-    // console.log(newCat);
-
     const res = await getSearchedProducts({ category: incomingCategory, search });
     if (res.error) {
       setData({ ...data, error: res.error });

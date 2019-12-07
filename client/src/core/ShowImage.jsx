@@ -1,5 +1,5 @@
 import React from "react";
-import noImage from "../images/no-image.jfif";
+import noImage from "../images/No_Image_Available.jpg";
 const ShowImage = ({ item, url }) => (
   <div className="product-img">
     <img

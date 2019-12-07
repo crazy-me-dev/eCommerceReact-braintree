@@ -22,8 +22,6 @@ export const signin = async user => {
 
 export const authenticate = (data, next) => {
   if (typeof window !== "undefined") {
-    console.log("authenticate", data);
-
     localStorage.setItem("jwt", JSON.stringify(data));
     next();
   }
@@ -35,11 +33,9 @@ export const signout = async next => {
     next();
     try {
       const res = await axios.get("api/signout");
-      console.log(res.data);
+
       return res.data;
-    } catch (error) {
-      console.log(error);
-    }
+    } catch (error) {}
   }
 };
 
