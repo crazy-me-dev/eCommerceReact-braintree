@@ -62,3 +62,26 @@ export const removeItem = productId => {
     localStorage.setItem("cart", JSON.stringify(updatedCart));
   }
 };
+
+export const addAddress = (address, next = f => f) => {
+  if (typeof window !== "undefined") {
+    localStorage.setItem("address", JSON.stringify(address));
+    next();
+  }
+};
+export const getAddress = () => {
+  if (typeof window !== undefined) {
+    if (localStorage.getItem("address")) {
+      return JSON.parse(localStorage.getItem("address"));
+    }
+  }
+  return null;
+};
+
+export const emptyCart = (next = f => f) => {
+  if (typeof window !== "undefined") {
+    localStorage.removeItem("cart");
+    localStorage.removeItem("address");
+    next();
+  }
+};

@@ -7,9 +7,20 @@ import { addItem } from "./cartHelper";
 const Card = ({ product, showViewProductButton = true, showFullDescription = false }) => {
   const [redirect, setRedirect] = useState(false);
 
-  const { _id, name, description, price, hasPhoto, category, createdAt, quantity } = product;
+  const {
+    _id,
+    name,
+    description,
+    price,
+    hasPhoto,
+    category,
+    createdAt,
+    quantity,
+    shipping
+  } = product;
   const addToCart = () => {
-    addItem(product, setRedirect(true));
+    const productForCart = { _id, name, price, category, hasPhoto, shipping };
+    addItem(productForCart, setRedirect(true));
   };
 
   const shouldRedirect = () => {

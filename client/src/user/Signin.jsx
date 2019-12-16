@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, Redirect } from "react-router-dom";
-
+import { useLastLocation } from "react-router-last-location";
 import { signin, authenticate, isAuthenticated } from "../auth";
 import Layout from "../core/Layout";
 
@@ -12,6 +12,7 @@ const Signin = () => {
     loading: false,
     redirectToReferral: false
   });
+  const lastLocation = useLastLocation();
 
   const { user } = isAuthenticated();
 
@@ -105,6 +106,9 @@ const Signin = () => {
 
   const redirectUser = () => {
     if (redirectToReferral) {
+      if (lastLocation && lastLocation.pathname === "/cart") {
+        return <Redirect to="/cart" />;
+      }
       if (user && user.role === 1) {
         return <Redirect to="/admin/dashboard" />;
       } else {

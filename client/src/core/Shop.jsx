@@ -4,7 +4,7 @@ import Card from "./Card";
 import { getCategories, getFilteredProducts } from "./apiCore";
 import Checkbox from "./Checkbox";
 import Radiobox from "./Radiobox";
-import { prices } from "./fixedPrices";
+import { prices } from "./staticContent";
 
 const Shop = () => {
   const [categories, setCategories] = useState([]);

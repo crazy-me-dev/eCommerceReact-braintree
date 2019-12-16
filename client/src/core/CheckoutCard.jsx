@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, Redirect } from "react-router-dom";
 import ShowImage from "./ShowImage";
-import noImage from "../images/no-image.jfif";
+import noImage from "../images/No_Image_Available.jpg";
 import moment from "moment";
 import { updateItem, removeItem } from "./cartHelper";
 
