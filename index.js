@@ -14,7 +14,7 @@ const PORT = process.env.PORT || 8000;
 if (process.env.NODE_ENV === "production") {
   //express will serve up production assets
   // like main.js or main.css
-  app.use(express.static("client/build"));
+  app.use(express.static("/client/build"));
 
   //Express will serve up the index.html
   //if it does not recognize the route like /dashboard and so on
