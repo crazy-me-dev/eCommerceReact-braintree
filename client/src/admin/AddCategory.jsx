@@ -1,10 +1,10 @@
-import React, { useState, useRef } from "react";
-import { Link } from "react-router-dom";
+import React, { useState, useRef, useEffect } from "react";
+import { Link, Redirect } from "react-router-dom";
 
 import Layout from "../core/Layout";
 
 import { isAuthenticated } from "../auth";
-import { createCategory } from "../admin/apiAdmin";
+import { createCategory, getCategory, updateCategory } from "../admin/apiAdmin";
 
 const useFocus = () => {
   const htmlElRef = useRef(null);
@@ -15,16 +15,39 @@ const useFocus = () => {
   return [htmlElRef, setFocus];
 };
 
-const AddCategory = () => {
+const AddCategory = props => {
   const [name, setName] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const [inputRef, setInputFocus] = useFocus();
+  const [category, setCategory] = useState({});
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [redirect, setRedirect] = useState(false);
 
   const {
     user: { _id: userId, name: userName },
     token
   } = isAuthenticated();
+
+  const load = async () => {
+    const categoryId = props.match.params.categoryId ? props.match.params.categoryId : null;
+    let category;
+    if (categoryId) {
+      setIsUpdating(true);
+      category = await getCategory(userId, token, categoryId);
+      if (category.error) {
+        setError(category.error);
+      } else {
+        setCategory(category);
+        setName(category.name);
+      }
+    }
+  };
+
+  useEffect(() => {
+    load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleChange = e => {
     setError("");
@@ -37,15 +60,24 @@ const AddCategory = () => {
     setError("");
     setSuccess(false);
     //make requeest
-    const data = await createCategory({ name }, userId, token);
+    let data;
+    if (isUpdating) data = updateCategory({ name }, userId, token, category._id);
+    else data = await createCategory({ name }, userId, token);
     if (data.error) {
       setError(data.error);
       setSuccess(false);
     } else {
+      if (isUpdating) {
+        setRedirect(true);
+      }
       setSuccess(true);
       setName("");
       setInputFocus();
     }
+  };
+
+  const shouldRedirect = () => {
+    if (redirect) return <Redirect to="/admin/category"></Redirect>;
   };
 
   const showSuccess = () => (
@@ -61,7 +93,7 @@ const AddCategory = () => {
   );
   const goBack = () => (
     <div className=" mt-5">
-      <Link to="/admin/dashboard" className="text-warning">
+      <Link to="/admin/category" className="text-warning">
         Back to Dashboard &larr;
       </Link>
     </div>
@@ -71,7 +103,7 @@ const AddCategory = () => {
     return (
       <div className="card">
         <article className=" bg-light">
-          <h4 className="card-title mt-3 text-center">Add Category</h4>
+          <h4 className="card-title mt-3 text-center">{isUpdating ? "Update" : "Add"}</h4>
           <form className="card-body mx-auto">
             <div className="form-group input-group">
               <input
@@ -90,7 +122,7 @@ const AddCategory = () => {
                   className="btn btn-outline-primary float-right"
                   onClick={handleSubmit}
                 >
-                  Create
+                  {isUpdating ? "Update" : "Create"}
                 </button>
               </div>
             </div>
@@ -104,6 +136,7 @@ const AddCategory = () => {
   return (
     <Layout title="Category Form" description={`G'day ${userName}`} className="container">
       <div className="row">
+        {shouldRedirect()}
         <div className="col-md-8 offset-md-2">
           {showError()}
           {showSuccess()}

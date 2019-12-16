@@ -103,6 +103,7 @@ const AddProduct = props => {
   };
   useEffect(() => {
     load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleChange = event => {
@@ -128,8 +129,6 @@ const AddProduct = props => {
     let data;
     if (isUpdating) {
       data = await updateProduct(formData, userId, token, values._id);
-      // console.log(values.formData);
-      // return;
     } else data = await createProduct(formData, userId, token);
     if (data.error) {
       setValues({ ...values, error: data.error, loading: false });

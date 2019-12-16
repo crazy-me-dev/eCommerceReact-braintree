@@ -4,6 +4,8 @@ const uuid = require("uuid/v1");
 const Joi = require("@hapi/joi");
 const jwt = require("jsonwebtoken");
 const keys = require("../config/keys");
+const { ObjectId } = mongoose.Schema;
+const Address = require("./address").schema;
 
 const userSchema = new mongoose.Schema(
   {
@@ -33,10 +35,8 @@ const userSchema = new mongoose.Schema(
       type: Number,
       default: 0
     },
-    history: {
-      type: Array,
-      default: []
-    }
+    history: [{ type: ObjectId, ref: "Order" }],
+    address: { type: Address }
   },
   //records timestamps automatically
   { timestamps: true }
@@ -81,7 +81,9 @@ userSchema.methods = {
   }
 };
 
-exports.validateNewUser = user => {
+validateNewUser = user => {
+  // console.log(user);
+
   const schema = Joi.object({
     name: Joi.string()
       .min(6)
@@ -112,7 +114,7 @@ exports.validateNewUser = user => {
   return result;
 };
 
-exports.validateUser = user => {
+validateUser = user => {
   const schema = Joi.object({
     name: Joi.string()
       .min(6)
@@ -120,7 +122,8 @@ exports.validateUser = user => {
     password: Joi.string()
       .min(6)
       .max(30)
-      .pattern(/\d/)
+      .pattern(/\d/),
+    address: Joi.any()
   });
 
   const result = schema.validate(user);
@@ -132,6 +135,8 @@ exports.validateUser = user => {
       result.error.details[0].message = message;
     }
   }
+  return result;
 };
 
-exports.User = mongoose.model("User", userSchema);
+const User = mongoose.model("User", userSchema);
+module.exports = { User, Address, validateNewUser, validateUser };

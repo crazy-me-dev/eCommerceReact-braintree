@@ -27,12 +27,19 @@ const Product = props => {
       }
     }
   };
+
+  const showError = () => (
+    <div className="alert alert-danger p-3" style={{ display: error ? "" : "none" }}>
+      {error}
+    </div>
+  );
   return (
     <Layout
       title={product && product.name}
       description={product && product.description && product.description.substring(0, 100)}
       className="container"
     >
+      {showError()}
       {product && product.description && (
         <div className="row">
           <div className="col-xl-6 col-lg-6 col-md-12">

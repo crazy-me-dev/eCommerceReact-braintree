@@ -19,20 +19,10 @@ const ManageProduct = () => {
   const [run, setRun] = useState(false);
 
   const [values, setValues] = useState({
-    name: "",
-    description: "",
     categories: [],
     productList: [],
-    category: "",
-    shipping: "",
-    price: "",
-    quantity: "",
-    photo: "",
     loading: false,
-    error: "",
-    createdProduct: "",
-    redirectToProfile: false,
-    formData: ""
+    error: ""
   });
 
   const { productList } = values;
@@ -42,7 +32,7 @@ const ManageProduct = () => {
     if (data.error) {
       setValues({ ...values, error: data.error });
     } else {
-      setValues({ ...values, categories: data, formData: new FormData() });
+      setValues({ ...values, categories: data });
     }
   };
 
@@ -51,7 +41,7 @@ const ManageProduct = () => {
     if (data.error) {
       setValues({ ...values, error: data.error });
     } else {
-      setValues({ ...values, productList: data, formData: new FormData() });
+      setValues({ ...values, productList: data });
     }
   };
 
@@ -89,7 +79,8 @@ const ManageProduct = () => {
         <td>{product.name && product.name.substring(0, 50)}</td>
         <td>{product.category && product.category.name}</td>
         <td>{product.quantity}</td>
-        <td>{product.price && product.price.toFixed(2)}</td>
+        <td>${product.price && product.price.toFixed(2)}</td>
+        <td align="center">{product.shipping && product.shipping ? "Yes" : "No"}</td>
         <td>
           <Link to={`/create/product/${product._id}`} className="btn btn-link">
             Update
@@ -103,13 +94,14 @@ const ManageProduct = () => {
       </tr>
     ));
     return (
-      <table className="table table-bordered">
+      <table className="ui stackable  celled  table mt-5">
         <thead>
           <tr>
             <th>Product Name</th>
             <th>Category</th>
-            <th>Qty in Stock</th>
+            <th>Stock</th>
             <th>Price</th>
+            <th>Shipping</th>
             <th>Update</th>
             <th>Delete</th>
           </tr>
@@ -127,7 +119,7 @@ const ManageProduct = () => {
         </Modal.Header>
         <Modal.Body>
           <h4>{itemToDelete.name}</h4>
-          <p>Are you sure you want to delete this product product?</p>
+          <p>Are you sure you want to delete this product?</p>
         </Modal.Body>
         <Modal.Footer>
           <Button onClick={cancelDelete}>Close</Button>
@@ -148,7 +140,7 @@ const ManageProduct = () => {
         Back to Dashboard
       </Link>
       {showProducts()}
-      <DeleteModal show={showModal} />
+      <DeleteModal show={showModal} onHide={() => setShowModal(false)} />
     </Layout>
   );
 };

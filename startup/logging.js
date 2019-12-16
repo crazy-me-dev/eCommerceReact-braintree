@@ -18,6 +18,14 @@ module.exports = () => {
 
   //log into a file
   winston.configure({
-    transports: [new winston.transports.File({ filename: "logfile.log" })]
+    transports: [new winston.transports.File({ filename: "logfile.log" })],
+    exceptionHandlers: [
+      new winston.transports.File({
+        filename: "./exceptions.log",
+        timestamp: true,
+        maxsize: 1000000
+      })
+    ],
+    exitOnError: false // <--- set this to false
   });
 };

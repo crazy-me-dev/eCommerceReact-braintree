@@ -172,7 +172,7 @@ exports.listRelated = async (req, res) => {
 };
 
 exports.listCategories = async (req, res) => {
-  //return teh diffent cat that are in use in Product collection
+  //return the diffent cat that are in use in Product collection
   const categories = await Product.distinct("category", {});
   res.json(categories);
 };
@@ -228,5 +228,29 @@ exports.photo = (req, res, next) => {
     return res.send(req.product.photo.data);
   }
   res.status(404).json({ error: "Product does not have image" });
+  next();
+};
+
+exports.updateQuantity = async (req, res, next) => {
+  console.log(req.body);
+
+  let bulkOps = req.body.products.map(item => {
+    return {
+      updateOne: {
+        filter: {
+          _id: item._id
+        },
+        update: {
+          $inc: {
+            quantity: -item.count,
+            sold: +item.count
+          }
+        }
+      }
+    };
+  });
+
+  await Product.bulkWrite(bulkOps);
+
   next();
 };

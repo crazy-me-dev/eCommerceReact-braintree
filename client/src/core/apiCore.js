@@ -66,3 +66,40 @@ export const getRelatedProducts = async productId => {
     return e.response.data;
   }
 };
+
+export const getBraintreeClientToken = async (userId, token) => {
+  try {
+    const res = await axios.get(`/api/braintree/token/${userId}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    return res.data;
+  } catch (e) {
+    //the error in axios comes in response.data object
+    return e.response.data;
+  }
+};
+
+export const processPayment = async (userId, token, paymentData) => {
+  try {
+    const res = await axios.post(`/api/braintree/payment/${userId}`, paymentData, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    return res.data;
+  } catch (e) {
+    //the error in axios comes in response.data object
+    return e.response.data;
+  }
+};
+
+export const createOrder = async (orderData, userId, token) => {
+  try {
+    const res = await axios.post(`/api/order/create/${userId}`, orderData, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+
+    return res.data;
+  } catch (e) {
+    //the error in axios comes in response.data object
+    return e.response.data;
+  }
+};

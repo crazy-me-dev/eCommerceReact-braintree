@@ -29,13 +29,18 @@ const AdminDashboard = () => {
         <h3 className="card-header">Admin Links</h3>
         <ul className="list-group">
           <li className="list-group-item">
-            <Link className="nav-link" to="/create/category">
-              Category
+            <Link className="nav-link" to="/admin/order">
+              Orders
+            </Link>
+          </li>
+          <li className="list-group-item">
+            <Link className="nav-link" to="/admin/category">
+              Categories
             </Link>
           </li>
           <li className="list-group-item">
             <Link className="nav-link" to="/admin/product">
-              Product
+              Products
             </Link>
           </li>
         </ul>
