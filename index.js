@@ -12,15 +12,21 @@ require("./startup/validation")();
 const PORT = process.env.PORT || 8000;
 
 if (process.env.NODE_ENV === "production") {
-  //express will serve up production assets
-  // like main.js or main.css
-  app.use(express.static("client/build"));
+  // //express will serve up production assets
+  // // like main.js or main.css
+  // app.use(express.static("client/build"));
 
-  //Express will serve up the index.html
-  //if it does not recognize the route like /dashboard and so on
-  const path = require("path");
-  app.get("*", (req, res) => {
-    res.sendFile(path.resolve(__dirname, "client", "build", "index.html"));
+  // //Express will serve up the index.html
+  // //if it does not recognize the route like /dashboard and so on
+  // const path = require("path");
+  // app.get("*", (req, res) => {
+  //   res.sendFile(path.resolve(__dirname, "client", "build", "index.html"));
+  // });
+  app.use(compression());
+  app.use(express.static(path.join(__dirname, "build")));
+
+  app.get("*", function(req, res) {
+    res.sendFile(path.join(__dirname, "client", "build", "index.html"));
   });
 }
 
