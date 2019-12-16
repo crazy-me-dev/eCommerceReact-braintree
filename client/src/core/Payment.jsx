@@ -12,7 +12,6 @@ import Container from "react-bootstrap/Container";
 import Card from "react-bootstrap/Card";
 import { termsOfService } from "./staticContent";
 import { ReactComponent as LogoSuccess } from "../images/svgs/checked.svg";
-import { ReactComponent as LogoSuccess2 } from "../images/svgs/check-square-o.svg";
 
 const Checkout = props => {
   const [items, setItems] = useState([]);
