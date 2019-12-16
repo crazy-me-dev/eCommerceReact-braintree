@@ -9,8 +9,8 @@
   "description": "",
   "main": "index.js",
   "engines": {
-    "node": "8.6.0",
-    "npm": "5.0.3"
+    "node": "10.15.3",
+    "npm": "6.9.0"
   },
   "scripts": {
     "start": "node index.js",
