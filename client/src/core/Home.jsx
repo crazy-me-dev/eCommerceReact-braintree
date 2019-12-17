@@ -28,18 +28,22 @@ const Home = () => {
     let productList;
     switch (displayBy) {
       case "byArrival":
-        productList = productByArrival.map(product => (
-          <div key={product._id} className="col-xl-3 col-lg-4 col-md-6  mb-3">
-            <Card product={product} />
-          </div>
-        ));
+        productList =
+          productByArrival &&
+          productByArrival.map(product => (
+            <div key={product._id} className="col-xl-3 col-lg-4 col-md-6  mb-3">
+              <Card product={product} />
+            </div>
+          ));
         break;
       case "bySold":
-        productList = productBySell.map(product => (
-          <div key={product._id} className="col-xl-3 col-lg-4 col-md-6  mb-3">
-            <Card product={product} />{" "}
-          </div>
-        ));
+        productList =
+          productBySell &&
+          productBySell.map(product => (
+            <div key={product._id} className="col-xl-3 col-lg-4 col-md-6  mb-3">
+              <Card product={product} />{" "}
+            </div>
+          ));
         break;
 
       default:
@@ -55,7 +59,7 @@ const Home = () => {
   );
 
   return (
-    <Layout title="Home Page" description="Node React E-commerce App" className="container-fluid">
+    <h4 title="Home Page" description="Node React E-commerce App" className="container-fluid">
       <Search />
 
       {error ? (
@@ -75,7 +79,7 @@ const Home = () => {
           <div className="row">{showProduc("bySold")}</div>
         </>
       )}
-    </Layout>
+    </h4>
   );
 };
 

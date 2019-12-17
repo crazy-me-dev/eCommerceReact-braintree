@@ -111,11 +111,13 @@ const Search = () => {
             <div className="input-group-prepend">
               <select name="category" onChange={handleChange} disabled={loadingCategory}>
                 <option value="All">All</option>
-                {data.categories.map(c => (
-                  <option key={c._id} value={c._id}>
-                    {c.name}
-                  </option>
-                ))}
+                {data &&
+                  data.categories &&
+                  data.categories.map(c => (
+                    <option key={c._id} value={c._id}>
+                      {c.name}
+                    </option>
+                  ))}
               </select>
             </div>
 
