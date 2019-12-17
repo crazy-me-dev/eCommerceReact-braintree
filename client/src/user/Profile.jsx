@@ -138,9 +138,8 @@ const Profile = props => {
                 onChange={handleChange}
               />
             </div>
-            {/* {addressForm(address)} */}
 
-            {/* <div className="form-group input-group">
+            <div className="form-group input-group">
               <div className="input-group-prepend">
                 <span className="input-group-text">Street</span>
               </div>
@@ -150,20 +149,6 @@ const Profile = props => {
                 type="text"
                 name="street"
                 value={address.street}
-                onChange={handleAddressChange}
-              />
-            </div> */}
-
-            <div className="form-group input-group">
-              <div className="input-group-prepend">
-                <span className="input-group-text">Password</span>
-              </div>
-              <input
-                className="form-control"
-                placeholder="Create password"
-                type="text"
-                name="street"
-                value={street}
                 onChange={handleAddressChange}
               />
             </div>
@@ -224,7 +209,6 @@ const Profile = props => {
               />
             </div>
 
-            {/* end */}
             <div className="form-group">
               <button type="submit" className="btn btn-primary btn-block" onClick={handleSubmit}>
                 {" "}
