@@ -59,7 +59,7 @@ const Home = () => {
   );
 
   return (
-    <h4 title="Home Page" description="Node React E-commerce App" className="container-fluid">
+    <Layout title="Home Page" description="Node React E-commerce App" className="container-fluid">
       <Search />
 
       {error ? (
@@ -79,7 +79,7 @@ const Home = () => {
           <div className="row">{showProduc("bySold")}</div>
         </>
       )}
-    </h4>
+    </Layout>
   );
 };
 
