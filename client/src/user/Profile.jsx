@@ -122,6 +122,7 @@ const Profile = props => {
                 name="email"
                 value={email}
                 onChange={handleChange}
+                disabled
               />
             </div>
 
@@ -148,7 +149,7 @@ const Profile = props => {
                 placeholder="Enter street"
                 type="text"
                 name="street"
-                value={address.street}
+                value={street}
                 onChange={handleAddressChange}
               />
             </div>
