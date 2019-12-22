@@ -1,11 +1,22 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
-import Modal from "react-bootstrap/Modal";
-import Button from "react-bootstrap/Button";
 import Layout from "../core/Layout";
-
+import DashboardLayout from "../user/DashboardLayout";
+import styled from "styled-components";
 import { isAuthenticated } from "../auth";
 import { getCategories, getProducts, removeProduct } from "./apiAdmin";
+import {
+  Modal,
+  Header,
+  Card,
+  Button,
+  Icon,
+  Table,
+  Container,
+  Divider,
+  Popup
+} from "semantic-ui-react";
+import { media } from "../utils/mediaQueriesBuilder";
 
 const ManageProduct = () => {
   const {
@@ -73,74 +84,102 @@ const ManageProduct = () => {
     }
   };
 
+  /**
+   * setting an event listener to detect the escape key
+   * to setShowModal to true hence closing the Modal
+   * used useCallback and useEffect hooks
+   */
+  const escFunction = useCallback(event => {
+    if (event.keyCode === 27) {
+      setShowModal(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    document.addEventListener("keydown", escFunction, false);
+
+    return () => {
+      document.removeEventListener("keydown", escFunction, false);
+    };
+  }, []);
+
+  const deleteModal = () => (
+    <Modal closeOnEscape={true} open={showModal} dimmer="blurring" size="tiny">
+      <Header icon="trash alternate" content="Delete Produc" />
+      <Modal.Content>
+        <p>Are you sure you want to delete {` ${itemToDelete.name}`}?</p>
+      </Modal.Content>
+      <Modal.Actions>
+        <Button onClick={cancelDelete} color="red">
+          <Icon name="remove" /> No
+        </Button>
+        <Button onClick={deleteProduct} color="green">
+          <Icon name="checkmark" /> Yes
+        </Button>
+      </Modal.Actions>
+    </Modal>
+  );
+
   const showProducts = () => {
     let tableItems = productList.map(product => (
-      <tr key={product._id}>
-        <td>{product.name && product.name.substring(0, 50)}</td>
-        <td>{product.category && product.category.name}</td>
-        <td>{product.quantity}</td>
-        <td>${product.price && product.price.toFixed(2)}</td>
-        <td align="center">{product.shipping && product.shipping ? "Yes" : "No"}</td>
-        <td>
-          <Link to={`/create/product/${product._id}`} className="btn btn-link">
-            Update
-          </Link>
-        </td>
-        <td>
-          <button onClick={() => handleDelete(product)} className="btn btn-link">
-            Delete
-          </button>
-        </td>
-      </tr>
+      <Table.Row className="left-aligned" key={product._id}>
+        <Table.Cell>{product.name && product.name}</Table.Cell>
+        <Table.Cell>{product.category && product.category.name}</Table.Cell>
+        <Table.Cell>{product.quantity}</Table.Cell>
+        <Table.Cell>${product.price && product.price.toFixed(2)}</Table.Cell>
+        <Table.Cell>
+          {product.shipping && product.shipping ? (
+            <Icon color="green" name="checkmark" size="large" />
+          ) : (
+            <Icon color="red" name="x" size="large" />
+          )}
+        </Table.Cell>
+        <Table.Cell>
+          <Popup
+            content="Update Product"
+            position="top right"
+            trigger={
+              <Button to={`/create/product/${product._id}`} as={Link} icon="edit" color="teal" />
+            }
+          />
+          <Popup
+            content="Delete Product"
+            position="top right"
+            trigger={<Button onClick={() => handleDelete(product)} icon="delete" color="red" />}
+          />
+        </Table.Cell>
+      </Table.Row>
     ));
     return (
-      <table className="ui stackable  celled  table mt-5">
-        <thead>
-          <tr>
-            <th>Product Name</th>
-            <th>Category</th>
-            <th>Stock</th>
-            <th>Price</th>
-            <th>Shipping</th>
-            <th>Update</th>
-            <th>Delete</th>
-          </tr>
-        </thead>
-        <tbody>{tableItems}</tbody>
-      </table>
-    );
-  };
-
-  const DeleteModal = props => {
-    return (
-      <Modal {...props} size="md" aria-labelledby="contained-modal-title-vcenter" centered>
-        <Modal.Header closeButton>
-          <Modal.Title id="contained-modal-title-vcenter">Delete Product</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <h4>{itemToDelete.name}</h4>
-          <p>Are you sure you want to delete this product?</p>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button onClick={cancelDelete}>Close</Button>
-          <Button variant="danger" onClick={deleteProduct}>
-            Delete
-          </Button>
-        </Modal.Footer>
-      </Modal>
+      <Table celled>
+        <Table.Header>
+          <Table.Row>
+            <Table.HeaderCell>Product Name</Table.HeaderCell>
+            <Table.HeaderCell>Category</Table.HeaderCell>
+            <Table.HeaderCell>Stock</Table.HeaderCell>
+            <Table.HeaderCell>Price</Table.HeaderCell>
+            <Table.HeaderCell>Shipping</Table.HeaderCell>
+            <Table.HeaderCell>Actions</Table.HeaderCell>
+          </Table.Row>
+        </Table.Header>
+        <Table.Body>{tableItems}</Table.Body>
+      </Table>
     );
   };
 
   return (
-    <Layout title="Add Product" description={`Product management`} className="container">
-      <Link to="/create/product" className="btn btn-primary mb-3 mr-3">
-        Create a Product
-      </Link>
-      <Link to="/admin/dashboard" className="btn btn-warning mb-3 ">
-        Back to Dashboard
-      </Link>
-      {showProducts()}
-      <DeleteModal show={showModal} onHide={() => setShowModal(false)} />
+    <Layout isDashboard={true}>
+      <DashboardLayout>
+        {deleteModal()}
+        <Container fluid style={{ marginTop: "2rem" }}>
+          <Header as="h1">Product Management</Header>
+          <Button style={{ marginTop: "1rem" }} color="blue" as={Link} to="/admin/product/create">
+            Create a Product
+          </Button>
+          <Divider style={{ marginBottom: "2rem" }} />
+          {showProducts()}
+        </Container>
+      </DashboardLayout>
     </Layout>
   );
 };

@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
 import Layout from "../core/Layout";
+import DashboardLayout from "../user/DashboardLayout";
 import moment from "moment";
 import { isAuthenticated } from "../auth";
 import { getCategories, removeCategory, getCategoriesInUse } from "./apiAdmin";
@@ -135,15 +136,17 @@ const ManageCategory = () => {
   };
 
   return (
-    <Layout title="Add category" description={`category management`} className="container">
-      <Link to="/create/category" className="btn btn-primary mb-3 mr-3">
-        Create a category
-      </Link>
-      <Link to="/admin/dashboard" className="btn btn-warning mb-3 ">
-        Back to Dashboard
-      </Link>
-      {showCategories()}
-      <DeleteModal show={showModal} onHide={() => setShowModal(false)} />
+    <Layout isDashboard={true}>
+      <DashboardLayout>
+        <Link to="/create/category" className="btn btn-primary mb-3 mr-3">
+          Create a category
+        </Link>
+        <Link to="/admin" className="btn btn-warning mb-3 ">
+          Back to Dashboard
+        </Link>
+        {showCategories()}
+        <DeleteModal show={showModal} onHide={() => setShowModal(false)} />
+      </DashboardLayout>
     </Layout>
   );
 };

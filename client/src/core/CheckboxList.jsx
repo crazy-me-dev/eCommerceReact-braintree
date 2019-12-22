@@ -1,15 +1,18 @@
 import React, { useState } from "react";
+import { Checkbox, List } from "semantic-ui-react";
 
-const Checkbox = ({ categories, handleFilters }) => {
+const CheckboxList = ({ categories, handleFilters }) => {
   const [checked, setChecked] = useState([]);
 
   const handleToggle = categoryId => event => {
     //return the first index or -1
     const currentCategoryId = checked.indexOf(categoryId);
     const newCheckedCategory = [...checked];
+    //if the categoryId is not in the array, we push it
     if (currentCategoryId === -1) {
       newCheckedCategory.push(categoryId);
     } else {
+      //if the categoryId is in the array, we remove it
       newCheckedCategory.splice(currentCategoryId, 1);
     }
     setChecked(newCheckedCategory);
@@ -17,16 +20,10 @@ const Checkbox = ({ categories, handleFilters }) => {
   };
 
   return categories.map((c, i) => (
-    <li key={i} className="list-unstyled">
-      <input
-        value={checked.indexOf(c._id) === -1}
-        onChange={handleToggle(c._id)}
-        type="checkbox"
-        className="form-check-input"
-      />
-      <label className="form-check-label">{c.name}</label>
-    </li>
+    <List.Item key={i}>
+      <Checkbox onChange={handleToggle(c._id)} type="checkbox" label={c.name} />
+    </List.Item>
   ));
 };
 
-export default Checkbox;
+export default CheckboxList;

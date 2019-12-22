@@ -1,8 +1,12 @@
 import React, { useState, useEffect } from "react";
+import { Grid, Header, Container } from "semantic-ui-react";
+
+//custom imports
 import Layout from "./Layout";
-import Card from "./Card";
+import MainCard from "./MainCard";
 import Search from "./Search";
 import { getProducts } from "./apiCore";
+
 const Home = () => {
   const [productBySell, setProductBySell] = useState([]);
   const [productByArrival, setProductByArrival] = useState([]);
@@ -24,28 +28,23 @@ const Home = () => {
     getProductBySell();
   }, []);
 
-  const showProduc = displayBy => {
-    let productList;
+  const showProduct = displayBy => {
     switch (displayBy) {
       case "byArrival":
-        productList = productByArrival.map(product => (
-          <div key={product._id} className="col-xl-3 col-lg-4 col-md-6  mb-3">
-            <Card product={product} />
-          </div>
+        return productByArrival.map(product => (
+          <Grid.Column mobile={16} tablet={8} computer={4} key={product._id}>
+            <MainCard product={product} />
+          </Grid.Column>
         ));
-        break;
       case "bySold":
-        productList = productBySell.map(product => (
-          <div key={product._id} className="col-xl-3 col-lg-4 col-md-6  mb-3">
-            <Card product={product} />{" "}
-          </div>
+        return productBySell.map(product => (
+          <Grid.Column mobile={16} tablet={8} computer={4} key={product._id}>
+            <MainCard product={product} />
+          </Grid.Column>
         ));
-        break;
-
       default:
-        break;
+        return null;
     }
-    return productList;
   };
 
   const showError = () => (
@@ -55,26 +54,24 @@ const Home = () => {
   );
 
   return (
-    <Layout title="Home Page" description="Node React E-commerce App" className="container-fluid">
+    <Layout title="Home Page" description="Node React E-commerce App">
       <Search />
+      <Container>
+        {error ? (
+          showError()
+        ) : (
+          <>
+            <Grid style={{ marginTop: "2rem" }} divided="vertically">
+              <Header as="h1">New Arrivals</Header>
+              <Grid.Row>{showProduct("byArrival")}</Grid.Row>
 
-      {error ? (
-        showError()
-      ) : (
-        <>
-          <h4 className="mb-4 mt-4">New Arrivals</h4>
-          <div className="row">{showProduc("byArrival")}</div>
-        </>
-      )}
-      {error ? (
-        showError()
-      ) : (
-        <>
-          <hr />
-          <h4 className="mb-4 mt-4">More Sold Products</h4>
-          <div className="row">{showProduc("bySold")}</div>
-        </>
-      )}
+              <Header as="h1">Best Sellers</Header>
+
+              <Grid.Row>{showProduct("bySold")}</Grid.Row>
+            </Grid>
+          </>
+        )}
+      </Container>
     </Layout>
   );
 };

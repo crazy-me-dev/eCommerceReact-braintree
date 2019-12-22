@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import moment from "moment";
 import { Link } from "react-router-dom";
 import Layout from "../core/Layout";
+import DashboardLayout from "../user/DashboardLayout";
 
 import { isAuthenticated } from "../auth";
 import { getOrders, getStatusValues, updateStatusValues } from "./apiAdmin";
@@ -98,18 +99,20 @@ const ManageOrder = () => {
   };
 
   return (
-    <Layout title="Orders" description={`Order management`} className="container">
-      <Link to="/admin/dashboard" className="btn btn-warning mb-3 ">
-        Back to Dashboard
-      </Link>
+    <Layout isDashboard={true}>
+      <DashboardLayout>
+        <Link to="/admin" className="btn btn-warning mb-3 ">
+          Back to Dashboard
+        </Link>
 
-      <div className="card mb-5">
-        <div className="card-header">
-          <h3 className="card-title">Purchase History ({orderList.length} Items)</h3>
+        <div className="card mb-5">
+          <div className="card-header">
+            <h3 className="card-title">Purchase History ({orderList.length} Items)</h3>
+          </div>
+
+          <div className="card-body">{showOrders()}</div>
         </div>
-
-        <div className="card-body">{showOrders()}</div>
-      </div>
+      </DashboardLayout>
     </Layout>
   );
 };

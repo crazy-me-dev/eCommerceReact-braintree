@@ -1,10 +1,42 @@
 import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import styled from "styled-components";
+
+import {
+  Segment,
+  Form,
+  Icon,
+  Header,
+  Message,
+  List,
+  Grid,
+  Container,
+  Divider
+} from "semantic-ui-react";
+
+//custom imports
+import { media } from "../utils/mediaQueriesBuilder";
+import MainCard from "./MainCard";
 import { getCategories, getSearchedProducts } from "./apiCore";
-import Card from "./Card";
+
+/**
+ * Styling elements with styled-components
+ * Semantic UI modified elements' name will end with 'UI'
+ */
+
+const SelectUI = styled(Form.Select)`
+  margin-right: 2rem !important;
+  ${media.sizeMedium`
+		margin-right: 3.5rem !important;
+    `}
+  ${media.sizeSmall`
+    margin-bottom: 1rem !important;
+    margin-right: 0rem !important;
+    `}
+`;
+
 const Search = () => {
   const [loadingCategory, setLoadingCategory] = useState(false);
-
-  const [emptyInput, setEmptyInput] = useState(false);
   const [data, setData] = useState({
     categories: [],
     category: "",
@@ -31,34 +63,27 @@ const Search = () => {
       setData({ ...data, error: data.error });
       setLoadingCategory(false);
     } else {
-      setData({ ...data, categories: data });
+      setData({ ...data, categories: data, category: "" });
       setLoadingCategory(false);
     }
   };
 
-  const handleChange = event => {
-    setEmptyInput(false);
-
-    setData({
-      ...data,
-      [event.target.name]: event.target.value
-    });
-
-    if (event.target.name === "category") {
-      searchProduct(event.target.value);
-    }
+  const handleChange = (e, { value, name }) => {
+    setData({ ...data, [name]: value, haveSearched: false });
   };
 
   const handleSubmit = event => {
     event.preventDefault();
     setData({ ...data, searchSuccess: false, haveSearched: false });
-    console.log(category, search);
-
     searchProduct();
   };
 
-  const searchProduct = async (incomingCategory = category) => {
-    const res = await getSearchedProducts({ category: incomingCategory, search });
+  const getCategoryName = id => {
+    return categories.filter(c => c._id === id)[0].name;
+  };
+
+  const searchProduct = async () => {
+    const res = await getSearchedProducts({ category, search });
     if (res.error) {
       setData({ ...data, error: res.error });
     } else {
@@ -70,82 +95,84 @@ const Search = () => {
     }
   };
 
-  const showEmptyInput = () => {
-    return (
-      <div className="alert alert-warning alert-dismissible fade show text-center" role="alert">
-        Please type something to start search!
-        <button type="button" className="close" onClick={() => setEmptyInput(false)}>
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-    );
-  };
-
   const showResultMessage = () => {
-    if (haveSearched && searchSuccess) {
-      return <h4 className="mb-4 mt-4">{`Found ${results.length} products`}</h4>;
+    if (searchSuccess) {
+      return <Header as="h1">{`${results.length} products found`}</Header>;
     }
 
     if (haveSearched && !searchSuccess)
       return (
-        <div className="container alert alert-info mt-4">
-          <h4 className="mb-4 mt-4">No products found!</h4>
-        </div>
+        <Message size="large" style={{ marginBottom: "3rem" }}>
+          <Header as="h1">
+            Sorry, we couldn't find any results for
+            {category ? ` "${getCategoryName(category)}" & ` : null}
+            {search ? `"${search}"` : null}
+          </Header>
+
+          <p style={{ marginTop: "2rem", fontSize: "2rem", color: "F8F8F9" }}>
+            Try adjusting your search. Here are some ideas:
+          </p>
+
+          <List bulleted style={{ fontSize: "1.5rem", color: "F8F8F9", marginBottom: "1rem" }}>
+            <List.Item>Make sure all words are spelled correctly.</List.Item>
+            <List.Item>Make sure your desired category is selected.</List.Item>
+            <List.Item>Try more general search terms.</List.Item>
+            <List.Item>
+              <Link to="shop">Visit our shop page for more filters.</Link>
+            </List.Item>
+          </List>
+        </Message>
       );
   };
 
   const searchedProducts = (resultList = []) => {
     return resultList.map(product => (
-      <div key={product._id} className="col-xl-3 col-lg-4 col-md-6  mb-3">
-        <Card product={product} />
-      </div>
+      <Grid.Column mobile={16} tablet={8} computer={4} key={product._id}>
+        <MainCard product={product} />
+      </Grid.Column>
     ));
   };
 
+  const categoryOptions =
+    categories &&
+    categories.map(c => {
+      return { key: c._id, value: c._id, text: c.name };
+    });
+
   const searchForm = () => {
     return (
-      <form action="">
-        {emptyInput && showEmptyInput()}
-        <span className="input-group-text">
-          <div className="input-group">
-            <div className="input-group-prepend">
-              <select name="category" onChange={handleChange} disabled={loadingCategory}>
-                <option value="All">All</option>
-                {data.categories.map(c => (
-                  <option key={c._id} value={c._id}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <input
-              type="text"
-              name="search"
-              className="form-control"
-              placeholder="Search Product"
+      <Segment style={{ margin: "2rem 0rem" }}>
+        <Form onSubmit={handleSubmit}>
+          <Form.Group>
+            <SelectUI
               onChange={handleChange}
+              name="category"
+              width={4}
+              placeholder="All"
+              options={categoryOptions}
+              disabled={loadingCategory}
             />
-            <div className="input-group-append">
-              <button type="submit" onClick={handleSubmit} className="input-group-text">
-                Search
-              </button>
-            </div>
-          </div>
-        </span>
-      </form>
+            <Form.Input
+              onChange={handleChange}
+              name="search"
+              width={11}
+              placeholder="Search..."
+              icon={<Icon name="search" circular link onClick={handleSubmit} />}
+            />
+          </Form.Group>
+        </Form>
+      </Segment>
     );
   };
 
   return (
-    <div className="row">
-      <div className="container">{searchForm()}</div>
-
-      <div className="container-fluid mt-4">
-        {showResultMessage()}
-        <div className="row">{searchedProducts(results)}</div>
-      </div>
-    </div>
+    <Container>
+      {searchForm()}
+      {showResultMessage()}
+      <Grid>
+        <Grid.Row>{searchedProducts(results)}</Grid.Row>
+      </Grid>
+    </Container>
   );
 };
 

@@ -10,6 +10,11 @@ body {
   background-color: #fff;
 }
 
+#column-sidebar,
+#column-content {
+  padding: 0 !important;
+}
+/* 
 .spur-card {
   border: 1px solid #d3d3d3;
   background: #fff;
@@ -220,3 +225,4 @@ h1 .decimal {
 .input-group .input-group-text {
   width: 100%;
 }
+ */

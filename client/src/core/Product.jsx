@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Layout from "./Layout";
-import Card from "./Card";
+import MainCard from "./MainCard";
 import { getProduct, getRelatedProducts } from "./apiCore";
 
 const Product = props => {
@@ -43,12 +43,18 @@ const Product = props => {
       {product && product.description && (
         <div className="row">
           <div className="col-xl-6 col-lg-6 col-md-12">
-            <Card product={product} showViewProductButton={false} showFullDescription={true}></Card>
+            <MainCard
+              product={product}
+              showViewProductButton={false}
+              showFullDescription={true}
+            ></MainCard>
           </div>
           <div className="col-xl-5 col-lg-5 col-md-10 offset-1 ">
             <h2 className="mb-5">Related Products</h2>
             {relatedProducts &&
-              relatedProducts.map(product => <Card key={product._id} product={product}></Card>)}
+              relatedProducts.map(product => (
+                <MainCard key={product._id} product={product}></MainCard>
+              ))}
           </div>
         </div>
       )}

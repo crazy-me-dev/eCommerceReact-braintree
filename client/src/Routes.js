@@ -33,10 +33,11 @@ const Routes = () => {
           <PrivateRoute path="/user/dashboard" exact component={UserDashboard} />
           <PrivateRoute path="/profile/:userId" exact component={Profile} />
           <PrivateRoute path="/user/history/:orderId" exact component={OrderDetail} />
-          <AdminRoute path="/admin/dashboard" exact component={AdminDashboard} />
+
+          <AdminRoute path="/admin" exact component={AdminDashboard} />
 
           <AdminRoute path="/admin/product" exact component={ManageProduct} />
-          <AdminRoute path="/create/product" exact component={AddProduct} />
+          <AdminRoute path="/admin/product/create" exact component={AddProduct} />
           <AdminRoute path="/create/product/:productId" exact component={AddProduct} />
 
           <AdminRoute path="/admin/category" exact component={ManageCategory} />

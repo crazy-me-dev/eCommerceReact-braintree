@@ -1,6 +1,17 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Link, Redirect } from "react-router-dom";
 import Layout from "../core/Layout";
+import {
+  Container,
+  TextArea,
+  Divider,
+  Header,
+  Segment,
+  Form,
+  Button,
+  Icon
+} from "semantic-ui-react";
+import DashboardLayout from "../user/DashboardLayout";
 
 import { isAuthenticated } from "../auth";
 import { createProduct, updateProduct, getCategories, getProduct } from "../admin/apiAdmin";
@@ -14,6 +25,9 @@ const useFocus = () => {
 };
 
 const AddProduct = props => {
+  //creating the ref by passing initial value null
+  const fileInputRef = useRef(null);
+
   const {
     user: { _id: userId, name: userName },
     token
@@ -106,13 +120,24 @@ const AddProduct = props => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleChange = event => {
-    const value = event.target.name === "photo" ? event.target.files[0] : event.target.value;
-    if (event.target.name === "categoryInput") formData.set("category", value);
-    else formData.set(event.target.name, value);
+  const handleChange = (event, { name, value }) => {
+    if (name === "categoryInput") formData.set("category", value);
+    else formData.set(name, value);
     setValues({
       ...values,
-      [event.target.name]: value,
+      [name]: value,
+      error: "",
+      loading: false,
+      createdProduct: ""
+    });
+  };
+
+  const fileChange = e => {
+    console.log("File chosen --->", e.target.files[0], e.target.name);
+    formData.set(e.target.name, e.target.files[0]);
+    setValues({
+      ...values,
+      [e.target.name]: e.target.files[0],
       error: "",
       loading: false,
       createdProduct: ""
@@ -156,7 +181,11 @@ const AddProduct = props => {
 
   const showSuccess = () => (
     <div className="alert alert-info" style={{ display: createdProduct ? "" : "none" }}>
-      New Product {createdProduct} has been created.
+      {`${
+        !isUpdating
+          ? `New Product ${createdProduct} has been created.`
+          : `Product ${createdProduct} has been updated.`
+      }`}
     </div>
   );
 
@@ -179,134 +208,128 @@ const AddProduct = props => {
     </div>
   );
 
+  const categoryOptions =
+    categories &&
+    categories.map(c => {
+      return { key: c._id, value: c._id, text: c.name };
+    });
+
+  const shippingOptions = [
+    { key: "yes", value: true, text: "Yes" },
+    { key: "no", value: false, text: "No" }
+  ];
+
   const newProductForm = () => {
     return (
-      <form className="card-body mx-auto">
+      <Form size="large">
         {shouldRedirect()}
-        <div className="form-group">
-          <label htmlFor="name">Name</label>
-          <input
-            name="name"
-            type="text"
-            className="form-control"
-            autoFocus
-            value={name}
-            onChange={handleChange}
-            ref={inputRef}
-          />
-        </div>
+        <Segment stacked>
+          <Form.Group>
+            <Form.Input
+              width={16}
+              fluid
+              label="Name"
+              placeholder="Product name"
+              name="name"
+              value={name}
+              onChange={handleChange}
+              // ref={inputRef}
+            />
+          </Form.Group>
 
-        <div className="form-group ">
-          <label className="text-muted" htmlFor="description">
-            Description
-          </label>
-          <textarea
+          <Form.Field
+            style={{ minHeight: 150 }}
+            control={TextArea}
+            label="Description"
+            placeholder="Enter the full product description"
             name="description"
-            className="form-control"
             value={description}
             onChange={handleChange}
           />
-        </div>
-        <div className="form-row">
-          <div className="form-group col-md-6">
-            <label className="text-muted" htmlFor="category">
-              Category
-            </label>
-            <select
+
+          <Form.Group>
+            <Form.Select
+              width={4}
+              fluid
+              label="Category"
+              placeholder="Select"
               name="categoryInput"
-              className="form-control"
               value={categoryInput}
+              options={categoryOptions}
               onChange={handleChange}
-            >
-              {!isUpdating ? <option>Please Select</option> : null}
-              {categories &&
-                categories.map((c, i) => (
-                  <option key={i} value={c._id}>
-                    {c.name}
-                  </option>
-                ))}
-            </select>
-          </div>
-          <div className="form-group col-md-6">
-            <label className="text-muted" htmlFor="shipping">
-              Shipping
-            </label>
-            <select
+              // ref={inputRef}
+            />
+            <Form.Select
+              width={4}
+              fluid
+              label="Shipping"
+              placeholder="Shipping"
               name="shipping"
-              className="form-control"
               value={shipping}
+              options={shippingOptions}
               onChange={handleChange}
-            >
-              <option>Please Select</option>
-              <option value="false">No</option>
-              <option value="true">Yes</option>
-            </select>
-          </div>
-        </div>
-
-        <div className="form-row">
-          <div className="form-group col-md-6">
-            <label htmlFor="quantity">Quantity</label>
-            <input
-              name="quantity"
-              type="number"
-              className="form-control"
-              value={quantity}
-              onChange={handleChange}
+              // ref={inputRef}
             />
-          </div>
-          <div className="form-group col-md-6">
-            <label htmlFor="price">Price</label>
-            <input
+            <Form.Input
+              width={4}
+              fluid
+              label="Price"
+              placeholder="Price"
               name="price"
-              type="number"
-              className="form-control"
               value={price}
+              type="number"
               onChange={handleChange}
+              // ref={inputRef}
             />
-          </div>
-        </div>
+            <Form.Input
+              width={4}
+              fluid
+              label="Quantity"
+              placeholder="Quantity"
+              name="quantity"
+              value={quantity}
+              type="number"
+              onChange={handleChange}
+              // ref={inputRef}
+            />
+          </Form.Group>
+          <Form.Group>
+            <Form.Field>
+              <Button
+                color="yellow"
+                size="large"
+                width={4}
+                content="Choose Photo"
+                labelPosition="left"
+                icon="file"
+                onClick={() => fileInputRef.current.click()}
+              />
+              <input ref={fileInputRef} type="file" hidden onChange={fileChange} name="photo" />
+            </Form.Field>
 
-        <h4>Select Image</h4>
-        <div className="form-group">
-          <label className="btn btn-secondary">
-            <input type="file" name="photo" accept="image/*" onChange={handleChange} id="photo" />
-          </label>
-        </div>
-        {goBack()}
-
-        <div className="text-right">
-          <button
-            className="btn btn-primary
-                "
-            type="submit"
-            onClick={handleSubmit}
-          >
-            {isUpdating ? "Update" : "Create"}
-          </button>
-        </div>
-      </form>
+            <Button color="blue" size="large" type="submit" onClick={handleSubmit}>
+              {isUpdating ? "Update" : "Create"}
+            </Button>
+          </Form.Group>
+        </Segment>
+      </Form>
     );
   };
 
   return (
-    <Layout
-      title={isUpdating ? "Update Product" : "Add Product"}
-      description={`G'day ${userName}, ready to ${isUpdating ? "update" : "add"} a product?`}
-      className="container"
-    >
-      <div className="row">
-        <div className="col-md-8 offset-md-2">
-          <div className="card ">
-            <article className=" bg-light">
-              {showError()}
-              {showSuccess()}
-              {showLoading()}
-              {newProductForm()}
-            </article>
-          </div>
-        </div>
-      </div>
+    <Layout isDashboard={true}>
+      <DashboardLayout>
+        <Container fluid style={{ marginTop: "2rem" }}>
+          <Header as="h1">{isUpdating ? "Update" : "Create"} Product</Header>
+
+          <Divider style={{ marginBottom: "2rem" }} />
+
+          {showError()}
+          {showSuccess()}
+          {showLoading()}
+          {newProductForm()}
+        </Container>
+      </DashboardLayout>
     </Layout>
   );
 };
