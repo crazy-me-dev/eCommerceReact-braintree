@@ -3,7 +3,7 @@ import { Radio, List } from "semantic-ui-react";
 
 const Radiobox = ({ prices, handleFilters }) => {
   const [radioValue, setRadioValue] = useState(["Any"]);
-  const handleChange = (event, { value, name }) => {
+  const handleChange = (event, { value }) => {
     //value is an string, so we make it an array of strings
     let priceArray = value.split(",");
 

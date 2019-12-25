@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Container, Grid, Header, Button, List, Message } from "semantic-ui-react";
+import { Container, Grid, Header, Button, List, Message, Icon } from "semantic-ui-react";
 
 //custom imports
 import Layout from "./Layout";
@@ -86,8 +86,17 @@ const Shop = () => {
     return (
       size > 0 &&
       size >= limit && (
-        <Button basic color="yellow" onClick={loadMore}>
+        <Button
+          style={{ marginLeft: "1rem" }}
+          icon
+          labelPosition="right"
+          basic
+          color="red"
+          size="huge"
+          onClick={loadMore}
+        >
           Load More
+          <Icon name="plus" />
         </Button>
       )
     );
@@ -198,6 +207,8 @@ const Shop = () => {
               <Grid.Column mobile={16} tablet={10} computer={12}>
                 {/* inner grid start */}
                 <Grid stackable doubling columns={4}>
+                  <Header as="h1">{`${size} products found`}</Header>
+
                   <Grid.Row>{showProduct("byArrival")}</Grid.Row>
                   <Grid.Row>{error ? showErrorMessage : loadMoreButton()}</Grid.Row>
                 </Grid>

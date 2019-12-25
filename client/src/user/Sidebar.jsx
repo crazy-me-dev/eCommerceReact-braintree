@@ -2,8 +2,15 @@ import React from "react";
 import { Link } from "react-router-dom";
 import styled from "styled-components";
 import { List } from "semantic-ui-react";
+
+/**custom imports */
 import { colorPrimaryLight2 } from "../utils/variables";
-import { media } from "../utils/mediaQueriesBuilder";
+import { mediaUI as media } from "../utils/mediaQueriesBuilder";
+
+/**
+ * Styling elements with styled-components
+ * Semantic UI modified elements' name will end with 'UI'
+ */
 
 const ListUI = styled(List)`
   color: #f8f8f9;
@@ -12,20 +19,24 @@ const ListUI = styled(List)`
     margin-right: 1rem;
   }
 
-  ${media.sizeMedium`  
-      display: grid;  
-      grid-template-columns: repeat(5,1fr);  
-      border-bottom: 1px solid #e3e3e5;
-      background-color: #f4f4f9;
-    `}
-  ${media.sizeSmall`grid-template-columns: repeat(3,1fr); `}
+  display: grid;
+  border-bottom: 1px solid #e3e3e5;
+  background-color: #f4f4f9;
+  grid-template-columns: repeat(3, 1fr);
+
+  ${media.mobile`grid-template-columns: repeat(5, 1fr);`}
+  ${media.computer`display: inline;`}
 `;
 
-const ListItemUI = styled(List.Item)`
-  border-bottom: 1px solid #e3e3e5;
-  display: flex;
+const ListItemUI = styled(List.Item)`  
   font-size: 1.3rem;
-  padding: 1.5rem 1.2rem;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  .icon {
+    margin-bottom: 1rem;
+  }
 
   :hover {
     background-color: ${colorPrimaryLight2};
@@ -37,33 +48,40 @@ const ListItemUI = styled(List.Item)`
     color: inherit;
   }
 
-  ${media.sizeMedium`  
-       flex-direction: column; 
-       border-bottom: none;  
-       align-items: center;   
-       font-size: 1.1rem;
-       .icon{
-        margin-bottom: 1rem;
-      }
-    `}
-  ${media.sizeSmall`  
-       flex-direction: row; 
-       padding: 1rem 1rem;
-       align-content: center;
-       .icon{
-        margin-bottom: 0;
-        
-      }
-    `}
-    ${media.sizeSmall2`    
-       flex-direction: column;        
-       align-content: center;
-       .icon{
-        margin-bottom: 1rem;        
-      }
-    `}
+  
+  /* media */
+  ${media.small`  
+  flex-direction: row;
+  padding: 1rem 1rem;
+  align-content: center;
+  .icon {
+    margin-bottom: 0;
+  }  
+  `}
 
-   
+  /* media */
+  ${media.mobile` 
+  flex-direction: column;
+  border-bottom: none;
+  align-items: center;
+  font-size: 1.1rem;
+  .icon {
+    margin-bottom: 1rem;
+    /* margin-left: 1rem; */
+  }
+  `}
+
+  ${media.tablet`font-size: 1.5rem;`}
+  ${media.computer`
+  flex-direction: row;
+  padding: 1.5rem 1rem;  
+  align-content: center;
+  border-bottom: 1px solid #e3e3e5;
+
+  .icon {
+    margin-bottom: 0;
+  }  
+  `}
 `;
 
 const Sidebar = () => {

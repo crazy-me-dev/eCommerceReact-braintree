@@ -1,6 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
+import { Button, Form, Grid, Header, Icon, Message, Segment } from "semantic-ui-react";
 import { Link, Redirect } from "react-router-dom";
 import { useLastLocation } from "react-router-last-location";
+
+/**custom imports */
 import { signin, authenticate, isAuthenticated } from "../auth";
 import Layout from "../core/Layout";
 
@@ -12,14 +15,17 @@ const Signin = () => {
     loading: false,
     redirectToReferral: false
   });
+  /**store the last location before rendering this page.
+   * It is used to know which page invoked this route so we can redirect to it if necessary
+   */
   const lastLocation = useLastLocation();
 
   const { user } = isAuthenticated();
 
   const { email, password, loading, error, redirectToReferral } = values;
 
-  const handleChange = e => {
-    setValues({ ...values, error: false, [e.target.name]: e.target.value });
+  const handleChange = (e, { value, name }) => {
+    setValues({ ...values, error: false, [name]: value });
   };
 
   const handleSubmit = async event => {
@@ -37,71 +43,58 @@ const Signin = () => {
 
   const signinForm = () => {
     return (
-      <div className="container col-sm-6">
-        <article className="card bg-light">
-          <form className="card-body mx-auto">
-            <h4 className="card-title mt-3 text-center">Sign in</h4>
-
+      <Grid textAlign="center" style={{ height: "100vh", marginTop: "2rem" }}>
+        <Grid.Column style={{ maxWidth: 500 }}>
+          <Header as="h2" color="teal" textAlign="center">
+            <Icon name="unlock alternate" size="large" color="teal" /> Log-in to your account
+          </Header>
+          <Form size="large">
             {showError()}
             {showLoading()}
-            <div className="form-group input-group">
-              <div className="input-group-prepend">
-                <span className="input-group-text">
-                  {" "}
-                  <i className="fa fa-envelope"></i>{" "}
-                </span>
-              </div>
-              <input
-                className="form-control"
-                placeholder="Email address"
-                type="email"
+            <Segment stacked>
+              <Form.Input
+                fluid
+                icon="user"
+                iconPosition="left"
+                placeholder="E-mail address"
                 name="email"
                 value={email}
                 onChange={handleChange}
               />
-            </div>
-
-            <div className="form-group input-group">
-              <div className="input-group-prepend">
-                <span className="input-group-text">
-                  {" "}
-                  <i className="fa fa-lock"></i>{" "}
-                </span>
-              </div>
-              <input
-                className="form-control"
-                placeholder="Create password"
+              <Form.Input
+                fluid
+                icon="lock"
+                iconPosition="left"
+                placeholder="Password"
                 type="password"
                 name="password"
                 value={password}
                 onChange={handleChange}
               />
-            </div>
-            <div className="form-group">
-              <button type="submit" className="btn btn-primary btn-block" onClick={handleSubmit}>
-                {" "}
-                Sign in{" "}
-              </button>
-            </div>
-            <p className="text-center">
-              Dont Have an account? <Link to="/signup">Sign Up</Link>{" "}
-            </p>
-          </form>
-        </article>
-      </div>
+
+              <Button color="teal" fluid size="large" onClick={handleSubmit}>
+                Login
+              </Button>
+            </Segment>
+          </Form>
+          <Message style={{ fontSize: "1.5rem" }}>
+            Dont Have an account? <Link to="/signup">Sign Up</Link>
+          </Message>
+        </Grid.Column>
+      </Grid>
     );
   };
 
   const showLoading = () =>
     loading && (
-      <div className="alert alert-info">
-        <h2>Loading...</h2>
-      </div>
+      <Message color="blue" style={{ display: error ? "" : "none", fontSize: "1.3rem" }}>
+        Loading...
+      </Message>
     );
   const showError = () => (
-    <div className="alert alert-danger" style={{ display: error ? "" : "none" }}>
+    <Message color="red" style={{ display: error ? "" : "none", fontSize: "1.3rem" }}>
       {error}
-    </div>
+    </Message>
   );
 
   const redirectUser = () => {
@@ -119,11 +112,7 @@ const Signin = () => {
   };
 
   return (
-    <Layout
-      title="Signin Page"
-      description="Node React E-commerce App"
-      className=" offset-2 container"
-    >
+    <Layout title="Signin Page" description="Node React E-commerce App">
       {signinForm()}
       {redirectUser()}
     </Layout>

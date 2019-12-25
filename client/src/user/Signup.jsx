@@ -1,22 +1,23 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
 
-import { signup } from '../auth';
-import Layout from '../core/Layout';
+import { Button, Form, Grid, Header, Icon, Message, Segment } from "semantic-ui-react";
+import { signup } from "../auth";
+import Layout from "../core/Layout";
 
 const Signup = () => {
   const [values, setValues] = useState({
-    name: '',
-    email: '',
-    password: '',
-    error: '',
+    name: "",
+    email: "",
+    password: "",
+    error: "",
     success: false
   });
 
   const { name, email, password, success, error } = values;
 
-  const handleChange = event => {
-    setValues({ ...values, error: false, [event.target.name]: event.target.value });
+  const handleChange = (event, { name, value }) => {
+    setValues({ ...values, error: false, [name]: value });
   };
 
   const handleSubmit = async event => {
@@ -27,96 +28,76 @@ const Signup = () => {
     if (data.error) {
       setValues({ ...values, error: data.error, success: false });
     } else {
-      setValues({ ...values, name: '', email: '', password: '', error: '', success: true });
+      setValues({ ...values, name: "", email: "", password: "", error: "", success: true });
     }
   };
 
   const signupForm = () => {
     return (
-      <div className='container col-sm-6'>
-        <article className='card bg-light'>
-          <form className='card-body mx-auto'>
-            <h4 className='card-title mt-3 text-center'>Create Account</h4>
-            <p className='text-center'>Get started with your free account</p>
-
+      <Grid textAlign="center" style={{ height: "100vh", marginTop: "2rem" }}>
+        <Grid.Column style={{ maxWidth: 500 }}>
+          <Header as="h2" color="teal" textAlign="center">
+            <Icon name="unlock alternate" size="large" color="teal" /> Log-in to your account
+          </Header>
+          <Form size="large">
             {showError()}
             {showSuccess()}
-            <div className='form-group input-group'>
-              <div className='input-group-prepend'>
-                <span className='input-group-text'>
-                  {' '}
-                  <i className='fa fa-user'></i>{' '}
-                </span>
-              </div>
-              <input
-                className='form-control'
-                placeholder='Full name'
-                type='text'
-                name='name'
+            <Segment stacked>
+              <Form.Input
+                autoFocus
+                fluid
+                icon="user"
+                iconPosition="left"
+                placeholder="Full name"
+                name="name"
                 value={name}
                 onChange={handleChange}
               />
-            </div>
-            <div className='form-group input-group'>
-              <div className='input-group-prepend'>
-                <span className='input-group-text'>
-                  {' '}
-                  <i className='fa fa-envelope'></i>{' '}
-                </span>
-              </div>
-              <input
-                className='form-control'
-                placeholder='Email address'
-                type='email'
-                name='email'
+              <Form.Input
+                fluid
+                icon="mail"
+                iconPosition="left"
+                placeholder="E-mail address"
+                name="email"
                 value={email}
                 onChange={handleChange}
               />
-            </div>
-
-            <div className='form-group input-group'>
-              <div className='input-group-prepend'>
-                <span className='input-group-text'>
-                  {' '}
-                  <i className='fa fa-lock'></i>{' '}
-                </span>
-              </div>
-              <input
-                className='form-control'
-                placeholder='Create password'
-                type='password'
-                name='password'
+              <Form.Input
+                fluid
+                icon="lock"
+                iconPosition="left"
+                placeholder="Password"
+                type="password"
+                name="password"
                 value={password}
                 onChange={handleChange}
               />
-            </div>
-            <div className='form-group'>
-              <button type='submit' className='btn btn-primary btn-block' onClick={handleSubmit}>
-                {' '}
-                Create Account{' '}
-              </button>
-            </div>
-            <p className='text-center'>
-              Have an account? <Link to='/signin'>Sign In</Link>{' '}
-            </p>
-          </form>
-        </article>
-      </div>
+
+              <Button color="teal" fluid size="large" onClick={handleSubmit}>
+                Login
+              </Button>
+            </Segment>
+          </Form>
+          <Message style={{ fontSize: "1.5rem" }}>
+            Have an account? <Link to="/signin">Sign In</Link>
+          </Message>
+        </Grid.Column>
+      </Grid>
     );
   };
 
   const showSuccess = () => (
-    <div className='alert alert-info' style={{ display: success ? '' : 'none' }}>
-      New Account has been created. Please <Link to='signin'>Sign in</Link>
-    </div>
+    <Message color="blue" style={{ display: success ? "" : "none", fontSize: "1.3rem" }}>
+      New Account has been created. Please <Link to="signin">Sign in</Link>
+    </Message>
   );
   const showError = () => (
-    <div className='alert alert-danger' style={{ display: error ? '' : 'none' }}>
+    <Message color="red" style={{ display: error ? "" : "none", fontSize: "1.3rem" }}>
       {error}
-    </div>
+    </Message>
   );
   return (
-    <Layout title='Signup Page' description='Node React E-commerce App' className='container'>
+    <Layout title="Signup Page" description="Node React E-commerce App">
       {signupForm()}
     </Layout>
   );

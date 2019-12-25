@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Link, Redirect } from "react-router-dom";
-import Layout from "../core/Layout";
+import styled from "styled-components";
 import {
   Container,
   TextArea,
@@ -9,13 +9,51 @@ import {
   Segment,
   Form,
   Button,
-  Icon
+  Message,
+  Input
 } from "semantic-ui-react";
-import DashboardLayout from "../user/DashboardLayout";
 
+//custom imports
+import { mediaUI as media } from "../utils/mediaQueriesBuilder";
+import Layout from "../core/Layout";
+import DashboardLayout from "../user/DashboardLayout";
 import { isAuthenticated } from "../auth";
 import { createProduct, updateProduct, getCategories, getProduct } from "../admin/apiAdmin";
 
+/**
+ * Styling elements with styled-components
+ * Semantic UI modified elements' name will end with 'UI'
+ */
+
+const FormFieldUI = styled(Form.Field)`
+  width: 100%;
+  margin-top: 1rem !important;
+  ${media.large`
+    width: 20%;
+  `}
+  ${media.wide`
+    width: 15%;
+  `}
+`;
+
+/**this values are taken from semantic UI label */
+const LabelCustom = styled.label`
+  display: block;
+  margin: 0 0 0.28571429rem 0;
+  color: rgba(0, 0, 0, 0.87);
+  font-size: 0.92857143em;
+  font-weight: 700;
+  text-transform: none;
+`;
+
+const ButtonContainer = styled.div`
+  ${media.mobile`width: 50%;`}
+  ${media.tablet`width: 30%;`}
+  ${media.large` width: 20%;`}
+  ${media.wide`width: 15%;`}
+`;
+
+/** custom hook for focus an element */
 const useFocus = () => {
   const htmlElRef = useRef(null);
   const setFocus = () => {
@@ -25,14 +63,16 @@ const useFocus = () => {
 };
 
 const AddProduct = props => {
-  //creating the ref by passing initial value null
+  /**input ref for product name. */
+  const [inputRef, setInputFocus] = useFocus();
+
+  //input ref for product  file
   const fileInputRef = useRef(null);
 
   const {
-    user: { _id: userId, name: userName },
+    user: { _id: userId },
     token
   } = isAuthenticated();
-  const [inputRef, setInputFocus] = useFocus();
 
   const [isUpdating, setIsUpdating] = useState(false);
   const [redirect, setRedirect] = useState(false);
@@ -68,14 +108,26 @@ const AddProduct = props => {
     formData
   } = values;
 
+  useEffect(() => {
+    load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  /** If creating a new product, it fetches categories and set values
+   *  If updating a product, it fetches the product with the productId passed as parameter and the categories
+   */
   const load = async () => {
+    /**getting the productId passed as param */
     const productId = props.match.params.productId ? props.match.params.productId : null;
     let product;
+    /**if we have the productId as parameter means it is updating */
     if (productId) {
       setIsUpdating(true);
       product = await getProduct(productId);
     }
+    /**feteching categories */
     const categoryList = await getCategories();
+    /** checking if there is an error. If it is, the values object is set accordindly */
     if (categoryList.error) {
       setValues({ ...values, error: categoryList.error, loading: false });
       return;
@@ -86,8 +138,10 @@ const AddProduct = props => {
     }
 
     let incomingData = undefined;
+    /** If updating, the FormData is filled with the product that matches the productId param */
     if (productId) incomingData = fillFormData(product);
 
+    /** if everything goes well, we set all values obtained */
     setValues({
       ...values,
       categories: categoryList,
@@ -98,8 +152,10 @@ const AddProduct = props => {
     });
   };
 
+  /**this function fills the FormData object */
   const fillFormData = product => {
     return Object.keys(product).reduce((formData, key) => {
+      //These following keys are not part of the FormData object. So we skip them.
       if (
         key === "createdAt" ||
         key === "updatedAt" ||
@@ -109,31 +165,45 @@ const AddProduct = props => {
         key === "__v"
       )
         return formData;
+      //Since category is a nested object, we take the _id from it
       else if (key === "category") formData.append(key, product[key]._id);
+      //finally, we append the rest of valid keys
       else formData.append(key, product[key]);
-
       return formData;
     }, new FormData());
   };
-  useEffect(() => {
-    load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
+  const validatePositiveNumber = value => {
+    /** this regex avoid characters other than numbers*/
+    const re = /^[0-9\b]+$/;
+    if (re.test(value)) {
+      let newValue;
+      //if the input value is less than 1, set newValue to 1
+      if (value < 0) newValue = 1;
+      //Double checking we got an int value
+      else newValue = parseInt(value);
+      return newValue;
+    }
+    return null;
+  };
+
+  /*** sets the form inputs to values object   */
   const handleChange = (event, { name, value }) => {
-    if (name === "categoryInput") formData.set("category", value);
-    else formData.set(name, value);
+    let newValue = value;
+    if (name === "quantity" || name === "price") newValue = validatePositiveNumber(value);
+    if (name === "categoryInput") formData.set("category", newValue);
+    else formData.set(name, newValue);
     setValues({
       ...values,
-      [name]: value,
+      [name]: newValue,
       error: "",
       loading: false,
       createdProduct: ""
     });
   };
 
+  /** sets the file selected */
   const fileChange = e => {
-    console.log("File chosen --->", e.target.files[0], e.target.name);
     formData.set(e.target.name, e.target.files[0]);
     setValues({
       ...values,
@@ -144,20 +214,20 @@ const AddProduct = props => {
     });
   };
 
-  const shouldRedirect = () => {
-    if (redirect) return <Redirect to="/admin/product"></Redirect>;
-  };
-
   const handleSubmit = async event => {
     event.preventDefault();
     setValues({ ...values, error: "", loading: true, createdProduct: "" });
     let data;
+    /**if is updating, it calls the updatedProduct method */
     if (isUpdating) {
       data = await updateProduct(formData, userId, token, values._id);
     } else data = await createProduct(formData, userId, token);
+    /**if creating a new product, it calls the createProduct method */
+    /** set error if there is any */
     if (data.error) {
       setValues({ ...values, error: data.error, loading: false });
     } else {
+      /**if it is updating, redirects back to the Product Management dashboard */
       if (isUpdating) {
         setRedirect(true);
       }
@@ -179,41 +249,52 @@ const AddProduct = props => {
     }
   };
 
+  const shouldRedirect = () => {
+    if (redirect) return <Redirect to="/admin/product"></Redirect>;
+  };
+
   const showSuccess = () => (
-    <div className="alert alert-info" style={{ display: createdProduct ? "" : "none" }}>
+    <Message color="green" style={{ display: createdProduct ? "" : "none", fontSize: "1.3rem" }}>
       {`${
-        !isUpdating
-          ? `New Product ${createdProduct} has been created.`
-          : `Product ${createdProduct} has been updated.`
+        !isUpdating ? `${createdProduct} has been created.` : `${createdProduct} has been updated.`
       }`}
-    </div>
+    </Message>
   );
 
   const showError = () => (
-    <div className="alert alert-danger" style={{ display: error ? "" : "none" }}>
+    <Message color="red" style={{ display: error ? "" : "none", fontSize: "1.3rem" }}>
       Product {error}
-    </div>
+    </Message>
   );
   const showLoading = () => (
-    <div className="alert alert-success" style={{ display: loading ? "" : "none" }}>
+    <Message style={{ display: loading ? "" : "none", fontSize: "1.3rem" }}>
       <h4>Loading...</h4>
-    </div>
+    </Message>
   );
 
   const goBack = () => (
-    <div className=" mt-5">
-      <Link to="/admin/product" className="text-warning">
-        Back to Product &larr;
-      </Link>
-    </div>
+    <ButtonContainer>
+      <Button
+        fluid
+        as={Link}
+        to="/admin/product"
+        color="red"
+        icon="left arrow"
+        labelPosition="right"
+        style={{ marginBottom: "1rem" }}
+        content="Back to Dashboard"
+      />
+    </ButtonContainer>
   );
 
+  /** category options use with category select element*/
   const categoryOptions =
     categories &&
     categories.map(c => {
       return { key: c._id, value: c._id, text: c.name };
     });
 
+  /** category options use with shipping select element*/
   const shippingOptions = [
     { key: "yes", value: true, text: "Yes" },
     { key: "no", value: false, text: "No" }
@@ -224,18 +305,16 @@ const AddProduct = props => {
       <Form size="large">
         {shouldRedirect()}
         <Segment stacked>
-          <Form.Group>
-            <Form.Input
-              width={16}
-              fluid
-              label="Name"
-              placeholder="Product name"
-              name="name"
-              value={name}
-              onChange={handleChange}
-              // ref={inputRef}
-            />
-          </Form.Group>
+          <LabelCustom>Name</LabelCustom>
+          <Input
+            fluid
+            placeholder="Product name"
+            name="name"
+            value={name}
+            onChange={handleChange}
+            ref={inputRef}
+            autoFocus
+          />
 
           <Form.Field
             style={{ minHeight: 150 }}
@@ -257,7 +336,6 @@ const AddProduct = props => {
               value={categoryInput}
               options={categoryOptions}
               onChange={handleChange}
-              // ref={inputRef}
             />
             <Form.Select
               width={4}
@@ -268,7 +346,6 @@ const AddProduct = props => {
               value={shipping}
               options={shippingOptions}
               onChange={handleChange}
-              // ref={inputRef}
             />
             <Form.Input
               width={4}
@@ -279,7 +356,7 @@ const AddProduct = props => {
               value={price}
               type="number"
               onChange={handleChange}
-              // ref={inputRef}
+              min="0"
             />
             <Form.Input
               width={4}
@@ -287,29 +364,54 @@ const AddProduct = props => {
               label="Quantity"
               placeholder="Quantity"
               name="quantity"
+              min="0"
               value={quantity}
               type="number"
               onChange={handleChange}
-              // ref={inputRef}
             />
           </Form.Group>
           <Form.Group>
-            <Form.Field>
+            <FormFieldUI>
               <Button
-                color="yellow"
+                fluid
+                basic
+                color="olive"
                 size="large"
                 width={4}
                 content="Choose Photo"
-                labelPosition="left"
+                labelPosition="right"
                 icon="file"
                 onClick={() => fileInputRef.current.click()}
               />
+              {/* since semantic UI Input doesnt accept file inputs, we make a trick with a semantic UI Button and a normal input element
+                  so  the bottom is attached to the input with the fileInputRef           
+              */}
               <input ref={fileInputRef} type="file" hidden onChange={fileChange} name="photo" />
-            </Form.Field>
-
-            <Button color="blue" size="large" type="submit" onClick={handleSubmit}>
-              {isUpdating ? "Update" : "Create"}
-            </Button>
+            </FormFieldUI>
+            <FormFieldUI>
+              <Button
+                icon="edit"
+                labelPosition="right"
+                fluid
+                color="blue"
+                size="large"
+                type="submit"
+                onClick={handleSubmit}
+                content={isUpdating ? "Update" : "Create"}
+              />
+            </FormFieldUI>
+            <FormFieldUI>
+              <Button
+                as={Link}
+                to="/admin/product"
+                icon="x"
+                labelPosition="right"
+                fluid
+                color="red"
+                size="large"
+                content="Cancel"
+              />
+            </FormFieldUI>
           </Form.Group>
         </Segment>
       </Form>
@@ -317,13 +419,13 @@ const AddProduct = props => {
   };
 
   return (
+    /**the layout changes when isDashboard props is  set to true */
     <Layout isDashboard={true}>
       <DashboardLayout>
         <Container fluid style={{ marginTop: "2rem" }}>
           <Header as="h1">{isUpdating ? "Update" : "Create"} Product</Header>
-
           <Divider style={{ marginBottom: "2rem" }} />
-
+          {goBack()}
           {showError()}
           {showSuccess()}
           {showLoading()}

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import PropTypes from "prop-types";
 import styled from "styled-components";
-
 import {
   Segment,
   Form,
@@ -11,11 +11,13 @@ import {
   List,
   Grid,
   Container,
-  Divider
+  Table,
+  Button,
+  Popup
 } from "semantic-ui-react";
 
 //custom imports
-import { media } from "../utils/mediaQueriesBuilder";
+import { mediaUI as media } from "../utils/mediaQueriesBuilder";
 import MainCard from "./MainCard";
 import { getCategories, getSearchedProducts } from "./apiCore";
 
@@ -25,17 +27,14 @@ import { getCategories, getSearchedProducts } from "./apiCore";
  */
 
 const SelectUI = styled(Form.Select)`
-  margin-right: 2rem !important;
-  ${media.sizeMedium`
-		margin-right: 3.5rem !important;
-    `}
-  ${media.sizeSmall`
-    margin-bottom: 1rem !important;
-    margin-right: 0rem !important;
-    `}
+  margin-bottom: 1rem !important;
+  margin-right: 0rem !important;
+
+  ${media.tablet`	margin-right: 3.5rem !important;margin-bottom: 0 !important;`}
+  ${media.computer`	margin-right: 2rem !important;`}
 `;
 
-const Search = () => {
+const Search = props => {
   const [loadingCategory, setLoadingCategory] = useState(false);
   const [data, setData] = useState({
     categories: [],
@@ -47,15 +46,42 @@ const Search = () => {
     haveSearched: false
   });
 
-  const { categories, category, search, results, searchSuccess, haveSearched, error } = data;
+  /** Destructuring props object */
+  const {
+    isAdmin,
+    handleDelete,
+    run = undefined,
+    toggleSearch,
+    setToggleSearch,
+    setShowToggleButton
+  } = props;
+
+  /** Destructuring data object  */
+  const { categories, category, search, results, searchSuccess, haveSearched } = data;
+
+  /** useDidMount is used as componentDidMount  */
+  function useDidMount() {
+    const [didMount, setDidMount] = useState(false);
+    useEffect(() => setDidMount(true), []);
+    return didMount;
+  }
+  const didMount = useDidMount();
+
+  /**
+   * runs the searchProduct method only after the component has mounted
+   * Reloads the search after product's been deleted
+   */
   useEffect(() => {
-    init();
+    if (haveSearched && didMount) {
+      searchProduct();
+    }
+  }, [run]);
+
+  useEffect(() => {
+    loadCategories();
   }, []);
 
-  const init = () => {
-    loadCategories();
-  };
-
+  /* fetch categories or set error if something goes wrong */
   const loadCategories = async () => {
     setLoadingCategory(true);
     const data = await getCategories();
@@ -68,28 +94,49 @@ const Search = () => {
     }
   };
 
+  /** create an array of objects to be used in Select element as options param*/
+  const categoryOptions =
+    categories &&
+    categories.map(c => {
+      return { key: c._id, value: c._id, text: c.name };
+    });
+
+  /**
+   * gets the name of the first index of the array returned by filter
+   *  based on the id passed as parameter
+   */
+  const getCategoryName = id => {
+    return categories.filter(c => c._id === id)[0].name;
+  };
+
+  /*** sets search input and Select category option   */
   const handleChange = (e, { value, name }) => {
     setData({ ...data, [name]: value, haveSearched: false });
   };
 
+  /** Sets flags and calls the searchProduct method */
   const handleSubmit = event => {
     event.preventDefault();
     setData({ ...data, searchSuccess: false, haveSearched: false });
     searchProduct();
   };
 
-  const getCategoryName = id => {
-    return categories.filter(c => c._id === id)[0].name;
-  };
-
+  /** Fetch the products based on the filters */
   const searchProduct = async () => {
+    /* After the first search the toggleSearch stays in the state set by the user
+     * if toggleSearch was false, then the new search would be hidden
+     * we make sure to set toggleSearch to true before displaying the search */
+    if (isAdmin && !toggleSearch) setToggleSearch(!toggleSearch);
     const res = await getSearchedProducts({ category, search });
     if (res.error) {
       setData({ ...data, error: res.error });
     } else {
-      if (res.length > 0)
+      if (res.length > 0) {
         setData({ ...data, searchSuccess: true, results: res, haveSearched: true });
-      else {
+        console.log(res);
+
+        if (isAdmin) setShowToggleButton(true);
+      } else {
         setData({ ...data, searchSuccess: false, results: undefined, haveSearched: true });
       }
     }
@@ -99,7 +146,6 @@ const Search = () => {
     if (searchSuccess) {
       return <Header as="h1">{`${results.length} products found`}</Header>;
     }
-
     if (haveSearched && !searchSuccess)
       return (
         <Message size="large" style={{ marginBottom: "3rem" }}>
@@ -125,6 +171,55 @@ const Search = () => {
       );
   };
 
+  /** this method create a table of products only if isAdmin props is set to true */
+  const searchedProductsAdmin = (resultList = []) => {
+    let tableItems = resultList.map(product => (
+      <Table.Row className="left-aligned" key={product._id}>
+        <Table.Cell>{product.name && product.name}</Table.Cell>
+        <Table.Cell>{product.category && getCategoryName(product.category)}</Table.Cell>
+        <Table.Cell>{product.quantity}</Table.Cell>
+        <Table.Cell>${product.price && product.price.toFixed(2)}</Table.Cell>
+        <Table.Cell>
+          {product.shipping && product.shipping ? (
+            <Icon color="green" name="checkmark" size="large" />
+          ) : (
+            <Icon color="red" name="x" size="large" />
+          )}
+        </Table.Cell>
+        <Table.Cell>
+          <Popup
+            content="Update Product"
+            position="top right"
+            trigger={
+              <Button to={`/create/product/${product._id}`} as={Link} icon="edit" color="teal" />
+            }
+          />
+          <Popup
+            content="Delete Product"
+            position="top right"
+            trigger={<Button onClick={() => handleDelete(product)} icon="delete" color="red" />}
+          />
+        </Table.Cell>
+      </Table.Row>
+    ));
+    return (
+      <Table celled>
+        <Table.Header>
+          <Table.Row>
+            <Table.HeaderCell>Product Name</Table.HeaderCell>
+            <Table.HeaderCell>Category</Table.HeaderCell>
+            <Table.HeaderCell>Stock</Table.HeaderCell>
+            <Table.HeaderCell>Price</Table.HeaderCell>
+            <Table.HeaderCell>Shipping</Table.HeaderCell>
+            <Table.HeaderCell>Actions</Table.HeaderCell>
+          </Table.Row>
+        </Table.Header>
+        <Table.Body>{tableItems}</Table.Body>
+      </Table>
+    );
+  };
+
+  /** this method create Cards of products only if isAdmin props is set to false */
   const searchedProducts = (resultList = []) => {
     return resultList.map(product => (
       <Grid.Column mobile={16} tablet={8} computer={4} key={product._id}>
@@ -133,15 +228,10 @@ const Search = () => {
     ));
   };
 
-  const categoryOptions =
-    categories &&
-    categories.map(c => {
-      return { key: c._id, value: c._id, text: c.name };
-    });
-
+  /** this method create the search form itself */
   const searchForm = () => {
     return (
-      <Segment style={{ margin: "2rem 0rem" }}>
+      <Segment style={{ margin: "1rem 0" }}>
         <Form onSubmit={handleSubmit}>
           <Form.Group>
             <SelectUI
@@ -166,14 +256,30 @@ const Search = () => {
   };
 
   return (
-    <Container>
+    // only full screen if isAdmin is set to true
+    <Container fluid={isAdmin}>
       {searchForm()}
-      {showResultMessage()}
-      <Grid>
-        <Grid.Row>{searchedProducts(results)}</Grid.Row>
-      </Grid>
+      {/* this is displayed when isAdmin is set to false */}
+      {!isAdmin && showResultMessage()}
+      {!isAdmin && (
+        <Grid>
+          <Grid.Row>{searchedProducts(results)}</Grid.Row>
+        </Grid>
+      )}
+      {/* this is displayed when isAdmin is set to true */}
+      {isAdmin && toggleSearch && showResultMessage()}
+      {isAdmin && results && results.length > 0 && toggleSearch && searchedProductsAdmin(results)}
     </Container>
   );
 };
 
 export default Search;
+
+Search.propTypes = {
+  isAdmin: PropTypes.bool,
+  handleDelete: PropTypes.func,
+  run: PropTypes.bool,
+  toggleSearch: PropTypes.bool,
+  setToggleSearch: PropTypes.func,
+  setShowToggleButton: PropTypes.func
+};

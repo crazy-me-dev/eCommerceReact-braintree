@@ -14,6 +14,22 @@ body {
 #column-content {
   padding: 0 !important;
 }
+
+@media (min-width: 992px) {
+  #column-sidebar,
+  #column-content {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+}
+
+@media (min-width: 1200px) {
+  #column-sidebar,
+  #column-content {
+    margin-right: 2rem !important;
+  }
+}
+
 /* 
 .spur-card {
   border: 1px solid #d3d3d3;

@@ -1,12 +1,19 @@
-import React, { useState } from "react";
+import React from "react";
 import styled from "styled-components";
 import { Link } from "react-router-dom";
-import { Input, Label, Menu, Grid, Container, Segment, Divider, List } from "semantic-ui-react";
+import { List } from "semantic-ui-react";
+
+/**custom imports */
 import Layout from "../core/Layout";
-import ManageProduct from "../admin/ManageProduct";
 import DashboardLayout from "./DashboardLayout";
 import { isAuthenticated } from "../auth";
 import { colorPrimaryLight2 } from "../utils/variables";
+
+/**
+ * Styling elements with styled-components
+ * Semantic UI modified elements' name will end with 'UI'
+ */
+
 const ListItemUI = styled(List.Item)`
   padding: 1.5rem 1.2rem !important;
   :hover {

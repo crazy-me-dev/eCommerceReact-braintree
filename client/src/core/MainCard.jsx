@@ -23,10 +23,10 @@ const HeaderUI = styled(Header)`
 const MainCard = ({ product }) => {
   const [redirect, setRedirect] = useState(false);
 
-  const { _id, name, price, hasPhoto, category, createdAt, shipping } = product;
+  const { _id, name, price, hasPhoto, category, createdAt, shipping, quantity } = product;
 
   const addToCart = () => {
-    const productForCart = { _id, name, price, category, hasPhoto, shipping };
+    const productForCart = { _id, name, price, category, hasPhoto, shipping, quantity };
     addItem(productForCart, setRedirect(true));
   };
 

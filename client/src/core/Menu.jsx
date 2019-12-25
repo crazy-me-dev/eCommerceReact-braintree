@@ -1,6 +1,7 @@
 /**
  * Menu is build with styled components
  * All CSS and JS code is one file
+ * Semantic UI modified elements' name will end with 'UI'
  */
 
 import React, { useState } from "react";
@@ -13,7 +14,8 @@ import { withRouter, Link } from "react-router-dom";
 import { signout, isAuthenticated } from "../auth";
 import { getCartCount } from "./cartHelper";
 import { colorPrimary, colorGrey6 } from "../utils/variables";
-import { media } from "../utils/mediaQueriesBuilder";
+
+import { mediaUI as media } from "../utils/mediaQueriesBuilder";
 import { ReactComponent as BurgerIcon } from "../images/svgs/menu.svg";
 
 // once user scrolls pass header section, navbar sticks at top and is blue
@@ -31,47 +33,57 @@ const Nav = styled.nav`
 const Wrapper = styled.div`
   position: relative;
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   padding: 1.6rem 3rem;
 
   .collapsible {
-    ${media.sizeSmall1`
-			position: absolute;
-			display: inline;
-			top: 100%;
-			right: 0;
-			margin: .5rem;
-			padding: 1rem;
-			z-index: 9999;
-			background-color: ${colorPrimary};
-			box-shadow: "0 .1rem .15rem rgba(0,0,0,.3)";
-			border-radius: 3px;
-			transition: all .2s;
-			visibility: hidden;
-			opacity: 0;
-		`}
+    position: absolute;
+    display: inline;
+    top: 100%;
+    right: 0;
+    margin: 0.3rem;
+    padding: 1.5rem 1rem;
+    z-index: 9999;
+    background-color: ${colorPrimary};
+    box-shadow: "0 .1rem .15rem rgba(0,0,0,.3)";
+    border-radius: 3px;
+    visibility: hidden;
+    opacity: 0;
 
     &--toggle {
       visibility: visible;
       opacity: 1;
     }
+    ${media.tablet`
+        position: relative;     
+        display: block;
+        margin: 0;
+        top: 0;
+        padding: 0;        
+        visibility: visible;
+        opacity: 1;
+    `}
   }
 
   .nav-list {
-    position: relative;
     display: flex;
     list-style: none;
-    ${media.sizeSmall1`
-			flex-direction: column;
-		`}
+    flex-direction: column;
+    ${media.tablet`     
+    flex-direction: row; 
+    align-items: center;
+    `}
 
     &--item-active {
       border-radius: 4px;
       background-color: rgba(255, 255, 255, 0.15);
     }
   }
+
+  ${media.computer`
+  padding: 2rem 3rem;
+    `}
 `;
 
 const Brand = styled.div`
@@ -81,33 +93,23 @@ const Brand = styled.div`
 const Name = styled(Link)`
   font-family: inherit;
   white-space: nowrap;
-  font-size: 2.5rem;
+  font-size: 2rem;
   font-weight: 600;
   color: inherit;
   background: transparent;
   border: none;
   cursor: pointer;
   outline: none;
-
   :hover,
   :active {
     color: inherit;
   }
-
-  ${media.sizeMedium`
-  font-size: 2rem;
-    `}
-
-  ${media.sizeSmall`
-  font-size: 1.5rem; 
-    `}
-    ${media.sizeSmall1`
-  font-size: 1.9rem; 
-    `}
+  ${media.small`font-size: 2.5rem;`}
+  ${media.computer`font-size: 3rem;`}
 `;
 
 const Toggler = styled.button`
-  display: none;
+  display: block;
   position: relative;
   fill: #fff;
   background-color: transparent;
@@ -123,31 +125,36 @@ const Toggler = styled.button`
     fill: ${colorGrey6};
   }
 
-  ${media.sizeSmall1`
-			display: block;
-		`}
+  ${media.tablet`
+  display: none;
+    `}
 `;
 
 const Item = styled.li`
   position: relative;
+  /* media */
+  width: 100%;
   :not(:last-child) {
-    margin-right: 0.3rem;
+    margin-bottom: 2rem;
   }
 
-  ${media.sizeSmall1`
-    width: 100%;        
-		:not(:last-child){
-			margin-bottom: 1.2rem;
-    };  
-	`}
+  ${media.tablet`
+  :not(:last-child) {
+    margin-bottom: 0;
+  } 
+
+    :not(:last-child) {
+      margin-right: 0.3rem;
+    }
+  `}
 `;
 
 const LinkButton = styled(Link)`
   font-family: inherit;
-  font-size: 1.4rem;
+  font-size: 1.7rem;
   font-weight: 300;
   white-space: nowrap;
-  padding: 1rem 1.2rem;
+  padding: 1rem 2rem;
   background: transparent;
   color: inherit;
   border: none;
@@ -165,29 +172,22 @@ const LinkButton = styled(Link)`
     background-color: rgba(255, 255, 255, 0.15);
     color: inherit;
   }
-
-  ${media.sizeMedium`
-  padding: 1rem 1rem;
-    `}
-    
-  ${media.sizeSmall`
-  font-size: 1.2rem;
-  padding: 1rem .7rem;
-    `}
-
-  ${media.sizeSmall1`
-			width: 100%;
-      text-align: left;
-      padding: .6rem 1.5rem;
-		`}
+  ${media.tablet`
+  font-size: 1.5rem;
+  padding: 1rem 2rem;
+  `}
+  ${media.computer`
+  font-size: 1.7rem;
+  padding: 1rem 1.5rem;
+  `}
 `;
 
 const Button = styled.a`
   font-family: inherit;
-  font-size: 1.4rem;
+  font-size: 1.7rem;
   font-weight: 300;
   white-space: nowrap;
-  padding: 1rem 1.2rem;
+  padding: 1rem 2rem;
   background: transparent;
   color: inherit;
   border: none;
@@ -205,27 +205,15 @@ const Button = styled.a`
     background-color: rgba(255, 255, 255, 0.15);
     color: inherit;
   }
-
-  ${media.sizeMedium`
-  padding: 1rem 1rem;
-    `}
-    
-  ${media.sizeSmall`
-  font-size: 1.2rem;
-  padding: 1rem .7rem;
-    `}
-
-  ${media.sizeSmall1`
-			width: 100%;
-      text-align: left;
-      padding: .6rem 1.5rem;
-		`}
 `;
 
-const Badge = styled(Label)`
-  ${media.sizeSmall1`
-		transform: translateX(-8.5rem);
-		`}
+const LabelUI = styled(Label)`
+  /* media */
+  transform: translateX(-2.3rem);
+
+  ${media.tablet`
+      transform: translateX(-.7rem);
+    `}
 `;
 
 //------------------------------------------------------------------------------
@@ -269,9 +257,9 @@ const Menu = ({ history }) => {
             <Item>
               <LinkButton to="/cart">
                 Cart
-                <Badge circular floating color="pink">
+                <LabelUI circular floating color="pink">
                   {getCartCount()}
-                </Badge>
+                </LabelUI>
               </LinkButton>
             </Item>
 

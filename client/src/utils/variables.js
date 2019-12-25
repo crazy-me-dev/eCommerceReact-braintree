@@ -30,3 +30,14 @@ export const sizes = {
   sizeSmall2: 550, //v
   sizeSmall3: 425 //vi
 };
+
+// media breakpoints
+export const sizesUI = {
+  wide: 1920,
+  large: 1200,
+  computer: 992,
+  tablet: 768,
+  mobile: 600,
+  small: 480,
+  tiny: 320
+};

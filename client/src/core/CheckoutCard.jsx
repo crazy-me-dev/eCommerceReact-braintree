@@ -1,43 +1,55 @@
 import React, { useState, useEffect } from "react";
-import { Link, Redirect } from "react-router-dom";
-import ShowImage from "./ShowImage";
+import styled from "styled-components";
+import { Button, Card, Image, Grid, Header, Input } from "semantic-ui-react";
+
+/**custom imports */
 import noImage from "../images/No_Image_Available.jpg";
-import moment from "moment";
 import { updateItem, removeItem } from "./cartHelper";
+import { mediaUI as media } from "../utils/mediaQueriesBuilder";
+
+/**
+ * Styling elements with styled-components
+ * Semantic UI modified elements' name will end with 'UI'
+ */
+
+const CardHeaderUI = styled(Card.Header)`
+  line-height: 1.5rem;
+  max-height: 3rem;
+  overflow: hidden;
+  font-size: 1.4rem;
+  ${media.tablet`
+  font-size : 1.5rem !important;
+  line-height: 1.7rem;
+  max-height: 3.4rem;
+  `}
+`;
+
+const PriceUI = styled(Header)`
+  font-size: 1.5rem !important;
+  margin: 0.5rem 0 !important;
+`;
+
+const ImageUI = styled(Image)`
+  visibility: hidden;
+  ${media.tablet`visibility: visible;`}
+`;
 
 const CheckoutCard = ({ product, setRun = f => f, run = undefined }) => {
-  const {
-    _id,
-    name,
-    description,
-    price,
-    hasPhoto,
-    category,
-    createdAt,
-    count: initialCount,
-    quantity
-  } = product;
+  const { _id, name, price, hasPhoto, count: initialCount, quantity } = product;
 
   const [subtotal, setSubtotal] = useState(0);
   const [count, setCount] = useState(initialCount);
 
+  /** this effect run every time count changes  */
   useEffect(() => {
     calculateSubtotal();
   }, [count]);
 
-  const showImage = className => {
-    return (
-      <div className={className}>
-        <img
-          src={hasPhoto ? `/api/product/photo/${_id}` : `${noImage}`}
-          alt={name}
-          className=""
-          style={{ maxHeight: "100%", maxWidth: "100%" }}
-        ></img>
-      </div>
-    );
+  const calculateSubtotal = () => {
+    setSubtotal(count * price);
   };
 
+  /** This function formats the decimal part to be smaller and above  */
   const formatPrice = priceToFormat => {
     let newPrice = priceToFormat.toFixed(2).toString();
     let decimalPart = newPrice.substring(newPrice.indexOf("."));
@@ -45,99 +57,99 @@ const CheckoutCard = ({ product, setRun = f => f, run = undefined }) => {
     return (
       <span>
         {newPrice}
-        <sup>{decimalPart}</sup>
+        <sup style={{ fontSize: 15 }}>{decimalPart}</sup>
       </span>
     );
   };
 
-  const calculateSubtotal = () => {
-    setSubtotal(count * price);
-  };
-
-  const handleChange = event => {
+  const handleChange = (event, { value }) => {
+    /** this regex avoid characters other than numbers*/
     const re = /^[0-9\b]+$/;
-
-    // if value is not blank, then test the regex
-
-    if (re.test(event.target.value)) {
-      setRun(!run);
+    if (re.test(value)) {
       let countValue;
-
-      if (event.target.value < 1) countValue = 1;
-      else if (event.target.value > quantity) countValue = quantity;
-      else countValue = parseInt(event.target.value);
-
-      // if(typeof countValue )
+      //if the input value is less than 1, set countValue to 1
+      if (value < 1) countValue = 1;
+      //if the input value is greater than quantity, setcountValue to quantity
+      else if (value > quantity) countValue = parseInt(quantity);
+      //Double checking we got an int value
+      else countValue = parseInt(value);
       setCount(countValue);
-
-      updateItem(_id, event.target.value);
+      updateItem(_id, countValue);
+      //setRun will make the total section in ShoppingCart to update
+      setRun(!run);
     }
   };
 
   const remove = () => {
     removeItem(_id);
+    //setRun will make the total section in ShoppingCart to update
     setRun(!run);
   };
 
   return (
-    <div className="card card-size">
-      <div className="card-body">
-        <div className="row">
-          <div className="col-lg-2 col-md-3">
-            <div className="row">
-              <div className="col-12">{showImage("cart-image")}</div>
-            </div>
-          </div>
-          <div className="col-lg-10 col-md-9">
-            <div className="row">
-              <div className="col-lg-9">
-                <p className="card-text font-weight-bold lead">
-                  <Link to={`/product/${_id}`}>{name.substring(0, 100)}</Link>
-                </p>
-                <p className="card-text  text-justify lead">{category && category.name}</p>
-              </div>
-              <div className="col-lg-3">
-                <div className="row">
-                  <div className="col-lg-12 col-md-4 col-sm-5">
-                    <h5
-                      className="card-text font-weight-bold text-nowrap mt-3"
-                      style={{ color: "#f20505" }}
+    <Card fluid>
+      <Card.Content>
+        <Grid>
+          <Grid.Row verticalAlign="middle">
+            <Grid.Column mobile={1} tablet={3} computer={2}>
+              <ImageUI
+                floated="left"
+                size="tiny"
+                src={hasPhoto ? `/api/product/photo/${_id}` : `${noImage}`}
+              />
+            </Grid.Column>
+            <Grid.Column mobile={16} tablet={13} computer={14}>
+              <Grid style={{ marginTop: "0.1rem" }}>
+                <Grid.Row style={{ paddingTop: 0 }}>
+                  <Grid.Column>
+                    <CardHeaderUI>{name && name.substring(0, 100)}</CardHeaderUI>
+                  </Grid.Column>
+                </Grid.Row>
+                <Grid.Row verticalAlign="middle" style={{ paddingTop: 0 }}>
+                  <Grid.Column mobile={8} tablet={4} computer={3}>
+                    <PriceUI>AU${formatPrice(subtotal)}</PriceUI>
+                  </Grid.Column>
+                  <Grid.Column mobile={8} tablet={4} computer={3}>
+                    <PriceUI
+                      style={{
+                        textDecoration: "line-through",
+                        color: "#c7c7c9"
+                      }}
                     >
-                      AU$
-                      {formatPrice(subtotal)}
-                    </h5>
-                    <h6 className="card-text text-light text-nowrap text-muted old-price">
                       AU${formatPrice(subtotal * 2.4)}
-                    </h6>
-                  </div>
-
-                  <div className="col-lg-12 col-md-4 col-sm-5 mt-3">
-                    <div className="input-group">
-                      <div className="input-group-prepend">
-                        <span className="input-group-text">Qty</span>
-                      </div>
-                      <input
-                        type="number"
-                        onChange={handleChange}
-                        value={count}
-                        className="form-control"
-                        min="1"
-                        max={quantity}
-                      />
-                    </div>
-                  </div>
-                  <div className="col-lg-12 col-md-4 mt-3">
-                    <button onClick={remove} type="button" className="btn btn-link text-nowrap">
-                      Remove
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+                    </PriceUI>
+                  </Grid.Column>
+                  <Grid.Column mobile={8} tablet={4} computer={5}>
+                    <Input
+                      style={{ marginTop: ".5rem" }}
+                      fluid
+                      label={{ basic: true, content: "Qty" }}
+                      labelPosition="left"
+                      type="number"
+                      value={count}
+                      min="1"
+                      max={quantity}
+                      onChange={handleChange}
+                    />
+                  </Grid.Column>
+                  <Grid.Column mobile={8} tablet={4} computer={3}>
+                    <Button
+                      style={{ marginTop: ".5rem" }}
+                      content="Remove"
+                      basic
+                      fluid
+                      size="large"
+                      color="red"
+                      onClick={remove}
+                    />
+                  </Grid.Column>
+                </Grid.Row>
+              </Grid>
+            </Grid.Column>
+          </Grid.Row>
+        </Grid>
+      </Card.Content>
+    </Card>
   );
 };
 

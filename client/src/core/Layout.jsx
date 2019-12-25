@@ -2,10 +2,17 @@ import React from "react";
 import Menu from "./Menu";
 import styled from "styled-components";
 import { Header, Segment } from "semantic-ui-react";
+import { mediaUI as media } from "../utils/mediaQueriesBuilder";
 
-//creating a segment to act like a Botstrap Jumbotron
-const Jumbotron = styled(Segment)`
-  min-height: 15rem !important;
+/**
+ * Styling elements with styled-components
+ * Semantic UI modified elements' name will end with 'UI'
+ */
+
+//creating a segment to act like a Jumbotron
+const SegmentUI = styled(Segment)`
+  min-height: 10rem !important;
+  ${media.computer`min-height: 15rem !important;`}
 `;
 
 const Layout = ({
@@ -17,10 +24,10 @@ const Layout = ({
   return (
     <div>
       <Menu />
-      {/* if isDashboard true we dont display the Jumbotron */}
+      {/* if isDashboard true we dont display the SegmentUI */}
       {!isDashboard && (
         <div>
-          <Jumbotron placeholder>
+          <SegmentUI placeholder>
             <div>
               <Header as="h1" style={{ marginLeft: "3rem" }}>
                 {title}
@@ -29,7 +36,7 @@ const Layout = ({
                 {description}
               </Header>
             </div>
-          </Jumbotron>
+          </SegmentUI>
         </div>
       )}
       <div>{children}</div>
