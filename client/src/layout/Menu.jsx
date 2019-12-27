@@ -12,7 +12,7 @@ import { withRouter, Link } from "react-router-dom";
 
 //custom imports
 import { signout, isAuthenticated } from "../auth";
-import { getCartCount } from "./cartHelper";
+import { getCartCount } from "../core/cartHelper";
 import { colorPrimary, colorGrey6 } from "../utils/variables";
 
 import { mediaUI as media } from "../utils/mediaQueriesBuilder";
@@ -265,7 +265,7 @@ const Menu = ({ history }) => {
 
             {user && user.role === 1 && (
               <Item>
-                <LinkButton to="/admin">Admin</LinkButton>
+                <LinkButton to="/admin/dashboard">Admin</LinkButton>
               </Item>
             )}
             {user && user.role === 0 && (

@@ -6,6 +6,7 @@ import { List } from "semantic-ui-react";
 /**custom imports */
 import { colorPrimaryLight2 } from "../utils/variables";
 import { mediaUI as media } from "../utils/mediaQueriesBuilder";
+import { isAuthenticated } from "../auth";
 
 /**
  * Styling elements with styled-components
@@ -85,28 +86,36 @@ const ListItemUI = styled(List.Item)`
 `;
 
 const Sidebar = () => {
+  const { user } = isAuthenticated();
   return (
     <ListUI divided>
-      <ListItemUI as={Link} to="/admin">
+      <ListItemUI
+        as={Link}
+        to={`${user && user.role === 1 ? "/admin/dashboard" : "/user/dashboard"}`}
+      >
         <List.Icon className="icon" size="large" color="green" name="home" />
         <List.Content className="content">Dashboard</List.Content>
       </ListItemUI>
-      <ListItemUI as={Link} to="/admin/order">
-        <List.Icon size="large" color="blue" name="truck" />
-        <List.Content>Orders</List.Content>
-      </ListItemUI>
-      <ListItemUI as={Link} to="/admin/category">
-        <List.Icon size="large" color="olive" name="target" />
-        <List.Content>Categories</List.Content>
-      </ListItemUI>
-      <ListItemUI as={Link} to="/admin/product">
-        <List.Icon size="large" color="teal" name="shop" />
-        <List.Content>Products</List.Content>
-      </ListItemUI>
-      <ListItemUI as={Link} to="/admin">
-        <List.Icon size="large" color="pink" name="chart line" />
-        <List.Content>Sales</List.Content>
-      </ListItemUI>
+      {user && user.role === 1 && (
+        <>
+          <ListItemUI as={Link} to="/admin/order">
+            <List.Icon size="large" color="blue" name="truck" />
+            <List.Content>Orders</List.Content>
+          </ListItemUI>
+          <ListItemUI as={Link} to="/admin/category">
+            <List.Icon size="large" color="olive" name="target" />
+            <List.Content>Categories</List.Content>
+          </ListItemUI>
+          <ListItemUI as={Link} to="/admin/product">
+            <List.Icon size="large" color="teal" name="shop" />
+            <List.Content>Products</List.Content>
+          </ListItemUI>
+          <ListItemUI as={Link} to="/admin/dashboard">
+            <List.Icon size="large" color="pink" name="chart line" />
+            <List.Content>Sales</List.Content>
+          </ListItemUI>
+        </>
+      )}
     </ListUI>
   );
 };

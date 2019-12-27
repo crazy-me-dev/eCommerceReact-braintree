@@ -13,8 +13,8 @@ import {
 } from "semantic-ui-react";
 
 /** custom imports */
-import Layout from "../core/Layout";
-import DashboardLayout from "../user/DashboardLayout";
+import Layout from "../layout/Layout";
+import DashboardLayout from "../layout/DashboardLayout";
 import { isAuthenticated } from "../auth";
 import { getProducts, removeProduct } from "./apiAdmin";
 import Search from "../core/Search";
@@ -61,6 +61,7 @@ const ManageProduct = () => {
    */
   useEffect(() => {
     loadProducts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [run, skip]);
 
   /**this function marks or select the product to be deleted and opens the modal
@@ -106,6 +107,7 @@ const ManageProduct = () => {
     return () => {
       document.removeEventListener("keydown", escFunction, false);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   /** this function either loads more items or load less
@@ -141,7 +143,7 @@ const ManageProduct = () => {
 
   const showProducts = () => {
     let tableItems = productList.map(product => (
-      <Table.Row className="left-aligned" key={product._id}>
+      <Table.Row key={product._id}>
         <Table.Cell>{product.name && product.name}</Table.Cell>
         <Table.Cell>{product.category && product.category.name}</Table.Cell>
         <Table.Cell>{product.quantity}</Table.Cell>
@@ -158,7 +160,7 @@ const ManageProduct = () => {
             content="Update Product"
             position="top right"
             trigger={
-              <Button to={`/create/product/${product._id}`} as={Link} icon="edit" color="teal" />
+              <Button to={`/admin/product/${product._id}`} as={Link} icon="edit" color="teal" />
             }
           />
           <Popup
@@ -248,6 +250,7 @@ const ManageProduct = () => {
                   fluid
                 />
               </Grid.Column>
+
               <Grid.Column
                 mobile={16}
                 tablet={8}

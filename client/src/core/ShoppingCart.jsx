@@ -9,11 +9,12 @@ import {
   Message,
   Form,
   Segment,
-  Accordion,
-  Icon
+  Accordion
 } from "semantic-ui-react";
 import styled from "styled-components";
-import Layout from "./Layout";
+
+/**Custom imports */
+import Layout from "../layout/Layout";
 import CheckoutCard from "./CheckoutCard";
 import { getCartItems, addAddress, getAddress } from "./cartHelper";
 import { isAuthenticated, updateUserAddress } from "../auth";
@@ -49,6 +50,7 @@ const ShoppingCart = props => {
       setAddress({ ...address, ...storedAddress, error: false });
       sethasAddress(true);
     } else setAddress({ ...address, error: false });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [run]);
 
   const calculateTotal = () => {
@@ -110,7 +112,6 @@ const ShoppingCart = props => {
     const { index } = titleProps;
     const newIndex = activeIndex === index ? -1 : index;
     setActiveIndex(newIndex);
-    console.log(activeIndex, newIndex);
   };
 
   const showCartItems = () => {
@@ -207,9 +208,9 @@ const ShoppingCart = props => {
     );
 
   const showLoginButton = () => (
-    <Link to="/signin" className="btn btn-warning btn-lg btn-block mt-3">
+    <Button fluid color="red" as={Link} to="/signin">
       Sign In to Proceed
-    </Link>
+    </Button>
   );
 
   const showTotalSection = () => {

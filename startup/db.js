@@ -13,7 +13,9 @@ module.exports = async () => {
       useFindAndModify: false
     });
     console.log(`Connected to ${keys.mongoURI}...`);
+    winston.info(`Connected to ${keys.mongoURI}...`);
   } catch (err) {
     console.log(err);
+    winston.error(err);
   }
 };

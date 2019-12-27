@@ -82,8 +82,6 @@ userSchema.methods = {
 };
 
 validateNewUser = user => {
-  // console.log(user);
-
   const schema = Joi.object({
     name: Joi.string()
       .min(6)

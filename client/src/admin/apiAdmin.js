@@ -179,8 +179,6 @@ export const getStatusValues = async (userId, token) => {
     return res.data;
   } catch (e) {
     //the error in axios comes in response.data object
-    console.log(e);
-
     return e.response.data;
   }
 };
@@ -198,8 +196,6 @@ export const updateStatusValues = async (userId, token, orderId, newStatus) => {
     return res.data;
   } catch (e) {
     //the error in axios comes in response.data object
-    console.log(e);
-
     return e.response.data;
   }
 };

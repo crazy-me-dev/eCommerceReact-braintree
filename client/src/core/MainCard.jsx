@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Link, Redirect } from "react-router-dom";
 import styled from "styled-components";
 import moment from "moment";
-import { Card, Icon, Button, Image, Header, Label } from "semantic-ui-react";
+import { Card, Icon, Button, Image, Header } from "semantic-ui-react";
 
 //custom imports
 import { addItem } from "./cartHelper";
@@ -60,9 +60,7 @@ const MainCard = ({ product }) => {
       <Image src={hasPhoto ? `/api/product/photo/${_id}` : `${noImage}`} wrapped ui={false} />
       <Card.Content>
         <HeaderUI>{`${name.substring(0, 40)}`}</HeaderUI>
-        <Card.Meta>
-          <span className="date">{`Added ${moment(createdAt).fromNow()}`}</span>
-        </Card.Meta>
+        <Card.Meta>{`Added ${moment(createdAt).fromNow()}`}</Card.Meta>
         <Card.Description>
           <Header as="h3">{`AU$${price && price.toFixed(2)}`}</Header>
         </Card.Description>

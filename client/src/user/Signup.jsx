@@ -1,45 +1,62 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-
 import { Button, Form, Grid, Header, Icon, Message, Segment } from "semantic-ui-react";
+
+import Layout from "../layout/Layout";
 import { signup } from "../auth";
-import Layout from "../core/Layout";
+import useForm from "../common/hooks/useForm";
+import { validateSignup } from "../common/validation/validate";
+
+const initialState = {
+  email: "",
+  password: "",
+  name: ""
+};
 
 const Signup = () => {
-  const [values, setValues] = useState({
-    name: "",
-    email: "",
-    password: "",
-    error: "",
-    success: false
-  });
+  const { handleChange, handleSubmit, setValues, values, errors } = useForm(
+    submit,
+    initialState,
+    validateSignup
+  );
 
-  const { name, email, password, success, error } = values;
+  const { name, email, password } = values;
 
-  const handleChange = (event, { name, value }) => {
-    setValues({ ...values, error: false, [name]: value });
-  };
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState(false);
 
-  const handleSubmit = async event => {
-    event.preventDefault();
-    setValues({ ...values, error: false });
+  //function declaration
+  async function submit() {
+    setError(false);
     const data = await signup({ name, email, password });
-
     if (data.error) {
-      setValues({ ...values, error: data.error, success: false });
+      setError(data.error);
+      setSuccess(false);
     } else {
-      setValues({ ...values, name: "", email: "", password: "", error: "", success: true });
+      setSuccess(true);
+      setValues(initialState);
     }
-  };
+  }
+
+  const showSuccess = () => (
+    <Message color="blue" style={{ display: success ? "" : "none", fontSize: "1.3rem" }}>
+      New Account has been created. Please <Link to="signin">Sign in</Link>
+    </Message>
+  );
+  const showError = () => (
+    <Message color="red" style={{ display: error ? "" : "none", fontSize: "1.3rem" }}>
+      {error}
+    </Message>
+  );
 
   const signupForm = () => {
     return (
       <Grid textAlign="center" style={{ height: "100vh", marginTop: "2rem" }}>
         <Grid.Column style={{ maxWidth: 500 }}>
           <Header as="h2" color="teal" textAlign="center">
-            <Icon name="unlock alternate" size="large" color="teal" /> Log-in to your account
+            <Icon name="unlock alternate" size="large" color="teal" /> Sign-up to your account
           </Header>
-          <Form size="large">
+          <Form size="large" onSubmit={handleSubmit} onChange={() => setError(false)}>
             {showError()}
             {showSuccess()}
             <Segment stacked>
@@ -52,6 +69,7 @@ const Signup = () => {
                 name="name"
                 value={name}
                 onChange={handleChange}
+                error={errors && errors.name && errors.name}
               />
               <Form.Input
                 fluid
@@ -61,6 +79,7 @@ const Signup = () => {
                 name="email"
                 value={email}
                 onChange={handleChange}
+                error={errors && errors.email && errors.email}
               />
               <Form.Input
                 fluid
@@ -71,9 +90,10 @@ const Signup = () => {
                 name="password"
                 value={password}
                 onChange={handleChange}
+                error={errors && errors.password && errors.password}
               />
 
-              <Button color="teal" fluid size="large" onClick={handleSubmit}>
+              <Button color="teal" fluid size="large" type="submit">
                 Login
               </Button>
             </Segment>
@@ -86,16 +106,6 @@ const Signup = () => {
     );
   };
 
-  const showSuccess = () => (
-    <Message color="blue" style={{ display: success ? "" : "none", fontSize: "1.3rem" }}>
-      New Account has been created. Please <Link to="signin">Sign in</Link>
-    </Message>
-  );
-  const showError = () => (
-    <Message color="red" style={{ display: error ? "" : "none", fontSize: "1.3rem" }}>
-      {error}
-    </Message>
-  );
   return (
     <Layout title="Signup Page" description="Node React E-commerce App">
       {signupForm()}

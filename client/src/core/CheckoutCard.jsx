@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import styled from "styled-components";
 import { Button, Card, Image, Grid, Header, Input } from "semantic-ui-react";
 
@@ -34,7 +35,7 @@ const ImageUI = styled(Image)`
   ${media.tablet`visibility: visible;`}
 `;
 
-const CheckoutCard = ({ product, setRun = f => f, run = undefined }) => {
+const CheckoutCard = ({ product, setRun = f => f, run = undefined, isPayment = false }) => {
   const { _id, name, price, hasPhoto, count: initialCount, quantity } = product;
 
   const [subtotal, setSubtotal] = useState(0);
@@ -43,6 +44,7 @@ const CheckoutCard = ({ product, setRun = f => f, run = undefined }) => {
   /** this effect run every time count changes  */
   useEffect(() => {
     calculateSubtotal();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [count]);
 
   const calculateSubtotal = () => {
@@ -102,7 +104,13 @@ const CheckoutCard = ({ product, setRun = f => f, run = undefined }) => {
               <Grid style={{ marginTop: "0.1rem" }}>
                 <Grid.Row style={{ paddingTop: 0 }}>
                   <Grid.Column>
-                    <CardHeaderUI>{name && name.substring(0, 100)}</CardHeaderUI>
+                    <CardHeaderUI>
+                      {isPayment ? (
+                        `${name && name.substring(0, 100)}`
+                      ) : (
+                        <Link to={`/product/${_id}`}>{name && name.substring(0, 100)}</Link>
+                      )}
+                    </CardHeaderUI>
                   </Grid.Column>
                 </Grid.Row>
                 <Grid.Row verticalAlign="middle" style={{ paddingTop: 0 }}>
@@ -119,30 +127,34 @@ const CheckoutCard = ({ product, setRun = f => f, run = undefined }) => {
                       AU${formatPrice(subtotal * 2.4)}
                     </PriceUI>
                   </Grid.Column>
-                  <Grid.Column mobile={8} tablet={4} computer={5}>
-                    <Input
-                      style={{ marginTop: ".5rem" }}
-                      fluid
-                      label={{ basic: true, content: "Qty" }}
-                      labelPosition="left"
-                      type="number"
-                      value={count}
-                      min="1"
-                      max={quantity}
-                      onChange={handleChange}
-                    />
-                  </Grid.Column>
-                  <Grid.Column mobile={8} tablet={4} computer={3}>
-                    <Button
-                      style={{ marginTop: ".5rem" }}
-                      content="Remove"
-                      basic
-                      fluid
-                      size="large"
-                      color="red"
-                      onClick={remove}
-                    />
-                  </Grid.Column>
+                  {!isPayment && (
+                    <>
+                      <Grid.Column mobile={8} tablet={4} computer={5}>
+                        <Input
+                          style={{ marginTop: ".5rem" }}
+                          fluid
+                          label={{ basic: true, content: "Qty" }}
+                          labelPosition="left"
+                          type="number"
+                          value={count}
+                          min="1"
+                          max={quantity}
+                          onChange={handleChange}
+                        />
+                      </Grid.Column>
+                      <Grid.Column mobile={8} tablet={4} computer={3}>
+                        <Button
+                          style={{ marginTop: ".5rem" }}
+                          content="Remove"
+                          basic
+                          fluid
+                          size="large"
+                          color="red"
+                          onClick={remove}
+                        />
+                      </Grid.Column>
+                    </>
+                  )}
                 </Grid.Row>
               </Grid>
             </Grid.Column>

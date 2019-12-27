@@ -1,246 +1,283 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import moment from "moment";
-import Layout from "../core/Layout";
-
+import styled from "styled-components";
+import Layout from "../layout/Layout";
+import {
+  Button,
+  Form,
+  Grid,
+  Header,
+  Message,
+  Segment,
+  Container,
+  Divider,
+  Checkbox
+} from "semantic-ui-react";
 import { isAuthenticated } from "../auth";
-import { getUser, updateUser, updateUserLocalStorage, getHistory } from "./apiUser";
+import { getUser, updateUser, updateUserLocalStorage } from "./apiUser";
+import DashboardLayout from "../layout/DashboardLayout";
+import { mediaUI as media } from "../utils/mediaQueriesBuilder";
+import useForm from "../common/hooks/useForm";
+import { validateUpdateProfile } from "../common/validation/validate";
+import { ButtonContainer } from "../common/components/customComponents";
+/**
+ * Styling elements with styled-components
+ * Semantic UI modified elements' name will end with 'UI'
+ */
+
+const FormFieldUI = styled(Form.Field)`
+  width: 100%;
+  margin-top: 1rem !important;
+  ${media.large` width: 20%; `}
+  ${media.wide` width: 15%; `}
+`;
+
+const CheckboxUI = styled(Checkbox)`
+  margin-top: 1rem;
+  ${media.large` margin-top: 2rem; `}
+`;
+const FormInputUI = styled(Form.Input)`
+  margin-top: 1rem !important;
+  ${media.large`margin-top:0 !important; `}
+`;
+const initialState = {
+  name: "",
+  email: "",
+  password: "",
+  street: "",
+  city: "",
+  state: "",
+  zip: "",
+  country: ""
+};
 
 const Profile = props => {
-  // const { token, _id: userId } = isAuthenticated();
+  const { handleChange, handleSubmit, setValues, values, errors } = useForm(
+    submit,
+    initialState,
+    validateUpdateProfile
+  );
 
   const {
-    user: { _id: userId, name: userName },
+    user: { _id: userId, role },
     token
   } = isAuthenticated();
 
-  const [values, setValues] = useState({
-    name: "",
-    email: "",
-    address: {
-      street: "",
-      city: "",
-      zip: "",
-      country: "",
-      state: ""
-    },
-    password: "",
-    error: false,
-    success: false
-  });
+  const [error, setError] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [updatePassword, setUpdatePassword] = useState(false);
 
-  const { name, email, address, password, error, success } = values;
-
-  const { street, city, zip, state, country } = address;
+  const { name, email, password, street, city, zip, country, state } = values;
 
   const load = async () => {
-    const his = await getHistory(userId, token);
-    console.log(his);
-
     const user = await getUser(props.match.params.userId, token);
     if (user.error) {
-      setValues({ ...values, error: user.error });
+      setError(user.error);
     } else {
-      setValues({ ...values, error: false, ...user });
+      let { _id, address, ...userDetails } = user;
+      setValues({ ...values, ...userDetails, ...user.address });
     }
   };
   useEffect(() => {
     load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleChange = event => {
-    setValues({ ...values, error: false, [event.target.name]: event.target.value });
-  };
-  const handleAddressChange = event => {
-    let data = { ...address };
-    data[event.target.name] = event.target.value;
-    setValues({ ...values, error: false, address: data });
-  };
-
-  const handleSubmit = async event => {
-    event.preventDefault();
-    setValues({ ...values, error: false });
-    let updatedUser = { name, address, password };
+  async function submit() {
+    setError(false);
+    let { email, name, password, ...updatedAddress } = values;
+    let updatedUser;
+    if (password) updatedUser = { name, password, address: updatedAddress };
+    else updatedUser = { name, address: updatedAddress };
 
     const data = await updateUser(userId, token, updatedUser);
-
     if (data.error) {
-      setValues({ ...values, error: data.error, success: false });
+      setError(data.error);
+      setSuccess(false);
     } else {
-      updateUserLocalStorage(data, setValues({ ...values, success: true, ...data }));
+      updateUserLocalStorage(data, () => {
+        setSuccess(true);
+      });
     }
-  };
-  const goBack = () => (
-    <div className=" mt-5">
-      <Link to="/user/dashboard" className="text-warning">
-        Back to Dashboard &larr;
-      </Link>
-    </div>
-  );
+  }
 
   const showSuccess = () => (
-    <div className="alert alert-info" style={{ display: success ? "" : "none" }}>
+    <Message color="green" style={{ display: success ? "" : "none", fontSize: "1.3rem" }}>
       Your Account has been Updated
-    </div>
+    </Message>
   );
+
   const showError = () => (
-    <div className="alert alert-danger" style={{ display: error ? "" : "none" }}>
+    <Message color="red" style={{ display: error ? "" : "none", fontSize: "1.3rem" }}>
       {error}
-    </div>
+    </Message>
   );
 
-  const signupForm = () => {
+  const toggle = (e, { checked }) => {
+    if (!checked) {
+      setValues({ ...values, password: "" });
+      setError(false);
+    }
+    setUpdatePassword(!updatePassword);
+  };
+
+  const goBack = () => (
+    <ButtonContainer>
+      <Button
+        fluid
+        as={Link}
+        to={`${role && role === 1 ? "/admin/dashboard" : "/user/dashboard"}`}
+        color="red"
+        icon="left arrow"
+        labelPosition="right"
+        style={{ marginBottom: "1rem" }}
+        content="Back to Dashboard"
+      />
+    </ButtonContainer>
+  );
+
+  const profileForm = () => {
     return (
-      <div className="container col-sm-6">
-        <article className="card bg-light">
-          <form className="card-body mx-auto">
-            <h1 className="card-title mt-3 mb-5 text-center">Update your Account</h1>
+      <Form size="large" onSubmit={handleSubmit} onChange={() => setError(false)}>
+        <Segment stacked>
+          {showError()}
+          {showSuccess()}
 
-            {showError()}
-            {showSuccess()}
-            <div className="form-group input-group">
-              <div className="input-group-prepend">
-                <span className="input-group-text">Name</span>
-              </div>
-              <input
-                className="form-control"
-                placeholder="Full name"
-                type="text"
-                name="name"
-                value={name}
-                onChange={handleChange}
-              />
-            </div>
-            <div className="form-group input-group">
-              <div className="input-group-prepend">
-                <span className="input-group-text">Email</span>
-              </div>
-              <input
-                className="form-control"
-                placeholder="Email address"
-                type="email"
-                name="email"
-                value={email}
-                onChange={handleChange}
-              />
-            </div>
+          <Grid>
+            <Grid.Row>
+              <Grid.Column mobile={16} computer={6}>
+                <Form.Input
+                  fluid
+                  label="Name"
+                  placeholder="Name"
+                  name="name"
+                  value={name}
+                  onChange={handleChange}
+                  error={errors && errors.name && errors.name}
+                />
+              </Grid.Column>
+              <Grid.Column mobile={16} computer={4}>
+                <CheckboxUI
+                  toggle
+                  label="Update Password"
+                  name="updatePassword"
+                  onChange={toggle}
+                  checked={updatePassword}
+                />
+              </Grid.Column>
+              <Grid.Column mobile={16} computer={6}>
+                <FormInputUI
+                  fluid
+                  label="Password"
+                  disabled={!updatePassword}
+                  placeholder="Enter password to update"
+                  type="password"
+                  name="password"
+                  autoComplete="new-password"
+                  value={password && password}
+                  onChange={handleChange}
+                  error={errors && errors.password && errors.password}
+                />
+              </Grid.Column>
+            </Grid.Row>
+          </Grid>
 
-            <div className="form-group input-group">
-              <div className="input-group-prepend">
-                <span className="input-group-text">Password</span>
-              </div>
-              <input
-                className="form-control"
-                placeholder="Create password"
-                type="password"
-                name="password"
-                value={password}
-                onChange={handleChange}
-              />
-            </div>
-            {/* {addressForm(address)} */}
+          <Form.Group>
+            <Form.Input
+              width={12}
+              fluid
+              label="Street"
+              placeholder="Street"
+              name="street"
+              value={street}
+              onChange={handleChange}
+              error={errors && errors.street && errors.street}
+            />
+            <Form.Input
+              width={4}
+              fluid
+              label="City"
+              placeholder="City"
+              name="city"
+              value={city}
+              onChange={handleChange}
+              error={errors && errors.city && errors.city}
+            />
+          </Form.Group>
+          <Form.Group>
+            <Form.Input
+              width={6}
+              fluid
+              label="State"
+              placeholder="State"
+              name="state"
+              value={state}
+              onChange={handleChange}
+              error={errors && errors.state && errors.state}
+            />
+            <Form.Input
+              width={6}
+              fluid
+              label="Country"
+              placeholder="Country"
+              name="country"
+              value={country}
+              onChange={handleChange}
+              error={errors && errors.country && errors.country}
+            />
+            <Form.Input
+              width={4}
+              fluid
+              label="ZIP/Post Code"
+              placeholder="ZIP/Post Code"
+              name="zip"
+              value={zip}
+              onChange={handleChange}
+              error={errors && errors.zip && errors.zip}
+            />
+          </Form.Group>
 
-            {/* <div className="form-group input-group">
-              <div className="input-group-prepend">
-                <span className="input-group-text">Street</span>
-              </div>
-              <input
-                className="form-control"
-                placeholder="Enter street"
-                type="text"
-                name="street"
-                value={address.street}
-                onChange={handleAddressChange}
+          <Form.Group>
+            <FormFieldUI>
+              <Button
+                icon="edit"
+                labelPosition="right"
+                fluid
+                color="blue"
+                size="large"
+                type="submit"
+                content="Update"
               />
-            </div> */}
-
-            <div className="form-group input-group">
-              <div className="input-group-prepend">
-                <span className="input-group-text">Password</span>
-              </div>
-              <input
-                className="form-control"
-                placeholder="Create password"
-                type="text"
-                name="street"
-                value={street}
-                onChange={handleAddressChange}
+            </FormFieldUI>
+            <FormFieldUI>
+              <Button
+                as={Link}
+                to={`${role && role === 1 ? "/admin/dashboard" : "/user/dashboard"}`}
+                icon="x"
+                labelPosition="right"
+                fluid
+                color="red"
+                size="large"
+                content="Cancel"
               />
-            </div>
-
-            <div className="form-group input-group">
-              <div className="input-group-prepend">
-                <span className="input-group-text">City</span>
-              </div>
-              <input
-                type="text"
-                name="city"
-                value={city}
-                placeholder="Enter City"
-                className="form-control"
-                onChange={handleAddressChange}
-              />
-            </div>
-
-            <div className="form-group input-group">
-              <div className="input-group-prepend">
-                <span className="input-group-text">State</span>
-              </div>
-              <input
-                type="text"
-                name="state"
-                value={state}
-                placeholder="Enter state"
-                className="form-control"
-                onChange={handleAddressChange}
-              />
-            </div>
-
-            <div className="form-group input-group">
-              <div className="input-group-prepend">
-                <span className="input-group-text">ZIP</span>
-              </div>
-              <input
-                type="text"
-                name="zip"
-                value={zip}
-                placeholder="Enter ZIP/Post code"
-                className="form-control"
-                onChange={handleAddressChange}
-              />
-            </div>
-
-            <div className="form-group input-group">
-              <div className="input-group-prepend">
-                <span className="input-group-text">Country</span>
-              </div>
-              <input
-                type="text"
-                name="country"
-                value={country}
-                placeholder="Enter country"
-                className="form-control"
-                onChange={handleAddressChange}
-              />
-            </div>
-
-            {/* end */}
-            <div className="form-group">
-              <button type="submit" className="btn btn-primary btn-block" onClick={handleSubmit}>
-                {" "}
-                Update Account{" "}
-              </button>
-            </div>
-          </form>
-        </article>
-      </div>
+            </FormFieldUI>
+          </Form.Group>
+        </Segment>
+      </Form>
     );
   };
 
   return (
-    <Layout title={`${name}, welcome to your  Dashboard`} description=" " className="container">
-      {goBack()}
-      {signupForm()}
+    <Layout isDashboard={true}>
+      <DashboardLayout>
+        <Container fluid style={{ marginTop: "2rem" }}>
+          <Header as="h1">Updating details</Header>
+          <Header as="h2">User: {email}</Header>
+          <Divider style={{ marginBottom: "2rem" }} />
+          {goBack()}
+          {profileForm()}
+        </Container>
+      </DashboardLayout>
     </Layout>
   );
 };

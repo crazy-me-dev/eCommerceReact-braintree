@@ -20,6 +20,7 @@ import {
 import { mediaUI as media } from "../utils/mediaQueriesBuilder";
 import MainCard from "./MainCard";
 import { getCategories, getSearchedProducts } from "./apiCore";
+import { useDidMount } from "../common/hooks/useDidMount";
 
 /**
  * Styling elements with styled-components
@@ -29,12 +30,12 @@ import { getCategories, getSearchedProducts } from "./apiCore";
 const SelectUI = styled(Form.Select)`
   margin-bottom: 1rem !important;
   margin-right: 0rem !important;
-
   ${media.tablet`	margin-right: 3.5rem !important;margin-bottom: 0 !important;`}
   ${media.computer`	margin-right: 2rem !important;`}
 `;
 
 const Search = props => {
+  const didMount = useDidMount();
   const [loadingCategory, setLoadingCategory] = useState(false);
   const [data, setData] = useState({
     categories: [],
@@ -59,14 +60,6 @@ const Search = props => {
   /** Destructuring data object  */
   const { categories, category, search, results, searchSuccess, haveSearched } = data;
 
-  /** useDidMount is used as componentDidMount  */
-  function useDidMount() {
-    const [didMount, setDidMount] = useState(false);
-    useEffect(() => setDidMount(true), []);
-    return didMount;
-  }
-  const didMount = useDidMount();
-
   /**
    * runs the searchProduct method only after the component has mounted
    * Reloads the search after product's been deleted
@@ -75,10 +68,12 @@ const Search = props => {
     if (haveSearched && didMount) {
       searchProduct();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [run]);
 
   useEffect(() => {
     loadCategories();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   /* fetch categories or set error if something goes wrong */
@@ -133,7 +128,6 @@ const Search = props => {
     } else {
       if (res.length > 0) {
         setData({ ...data, searchSuccess: true, results: res, haveSearched: true });
-        console.log(res);
 
         if (isAdmin) setShowToggleButton(true);
       } else {
@@ -174,7 +168,7 @@ const Search = props => {
   /** this method create a table of products only if isAdmin props is set to true */
   const searchedProductsAdmin = (resultList = []) => {
     let tableItems = resultList.map(product => (
-      <Table.Row className="left-aligned" key={product._id}>
+      <Table.Row key={product._id}>
         <Table.Cell>{product.name && product.name}</Table.Cell>
         <Table.Cell>{product.category && getCategoryName(product.category)}</Table.Cell>
         <Table.Cell>{product.quantity}</Table.Cell>

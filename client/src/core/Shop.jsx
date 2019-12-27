@@ -2,12 +2,12 @@ import React, { useState, useEffect } from "react";
 import { Container, Grid, Header, Button, List, Message, Icon } from "semantic-ui-react";
 
 //custom imports
-import Layout from "./Layout";
+import Layout from "../layout/Layout";
 import MainCard from "./MainCard";
 import { getCategories, getFilteredProducts } from "./apiCore";
 import CheckboxList from "./CheckboxList";
 import Radiobox from "./Radiobox";
-import { prices } from "./staticContent";
+import { prices } from "../common/staticContent";
 
 const Shop = () => {
   const [categories, setCategories] = useState([]);
@@ -23,6 +23,7 @@ const Shop = () => {
 
   useEffect(() => {
     init();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const init = () => {

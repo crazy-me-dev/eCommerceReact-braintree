@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { Grid, Header, Container } from "semantic-ui-react";
+import { Grid, Header, Container, Message } from "semantic-ui-react";
 
 //custom imports
-import Layout from "./Layout";
+import Layout from "../layout/Layout";
 import MainCard from "./MainCard";
 import Search from "./Search";
 import { getProducts } from "./apiCore";
@@ -48,9 +48,9 @@ const Home = () => {
   };
 
   const showError = () => (
-    <div className="alert alert-danger" role="alert">
+    <Message color="red" style={{ display: error ? "" : "none", fontSize: "1.3rem" }}>
       {error}
-    </div>
+    </Message>
   );
 
   return (

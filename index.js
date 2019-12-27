@@ -11,10 +11,10 @@ require("./startup/validation")();
 //Assigning port number
 const PORT = process.env.PORT || 8000;
 
-const server = app.listen(PORT, () =>
-  // winston.info(`Listening on port ${PORT}`)
-  console.log(`Listening on port ${PORT}`)
-);
+const server = app.listen(PORT, () => {
+  winston.info(`Listening on port ${PORT}`);
+  console.log(`Listening on port ${PORT}`);
+});
 
 //To be use for testing purpuses
 module.exports = server;

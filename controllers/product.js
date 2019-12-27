@@ -125,7 +125,6 @@ exports.list = async (req, res) => {
   let sortBy = req.query.sortBy ? req.query.sortBy : "_id";
   let limit = req.query.limit ? parseInt(req.query.limit) : 6;
   let skip = req.query.skip ? parseInt(req.query.skip) : 0;
-  console.log(req.query.skip);
 
   let products = await Product.find()
     .select("-photo")
@@ -235,8 +234,6 @@ exports.photo = (req, res, next) => {
 };
 
 exports.updateQuantity = async (req, res, next) => {
-  console.log(req.body);
-
   let bulkOps = req.body.products.map(item => {
     return {
       updateOne: {

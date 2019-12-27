@@ -15,10 +15,12 @@ import {
 
 //custom imports
 import { mediaUI as media } from "../utils/mediaQueriesBuilder";
-import Layout from "../core/Layout";
-import DashboardLayout from "../user/DashboardLayout";
+import Layout from "../layout/Layout";
+import DashboardLayout from "../layout/DashboardLayout";
 import { isAuthenticated } from "../auth";
 import { createProduct, updateProduct, getCategories, getProduct } from "../admin/apiAdmin";
+import { ButtonContainer } from "../common/components/customComponents";
+import useFocus from "../common/hooks/useFocus";
 
 /**
  * Styling elements with styled-components
@@ -45,22 +47,6 @@ const LabelCustom = styled.label`
   font-weight: 700;
   text-transform: none;
 `;
-
-const ButtonContainer = styled.div`
-  ${media.mobile`width: 50%;`}
-  ${media.tablet`width: 30%;`}
-  ${media.large` width: 20%;`}
-  ${media.wide`width: 15%;`}
-`;
-
-/** custom hook for focus an element */
-const useFocus = () => {
-  const htmlElRef = useRef(null);
-  const setFocus = () => {
-    htmlElRef.current && htmlElRef.current.focus();
-  };
-  return [htmlElRef, setFocus];
-};
 
 const AddProduct = props => {
   /**input ref for product name. */

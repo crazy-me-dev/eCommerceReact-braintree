@@ -1,7 +1,17 @@
 const { User, validateUser } = require("../models/user");
 
 exports.userById = async (req, res, next, id) => {
-  const user = await User.findById(id).populate("history");
+  const user = await User.findById(id, {
+    name: 1,
+    email: 1,
+    _id: 1,
+    "address.street": 1,
+    "address.city": 1,
+    "address.zip": 1,
+    "address.state": 1,
+    "address.country": 1
+  });
+
   if (!user) {
     return res.status(400).json({ error: "User not found" });
   }
@@ -27,7 +37,6 @@ exports.read = (req, res) => {
 };
 
 exports.update = async (req, res) => {
-  // console.log(req.body);
   const { error } = validateUser(req.body);
   if (error) return res.status(400).json({ error: error.details[0].message });
 

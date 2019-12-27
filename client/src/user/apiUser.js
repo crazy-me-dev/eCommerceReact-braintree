@@ -45,22 +45,9 @@ export const updateUserLocalStorage = (user, next = f => f) => {
 
       if (user && user.address) {
         const { updatedAt, createdAt, ...address } = user.address;
-        // console.log(address);
         localStorage.setItem("address", JSON.stringify(address));
       }
       next();
     }
   }
 };
-
-// if (typeof window !== "undefined") {
-//   localStorage.setItem("jwt", JSON.stringify(data));
-
-//   if (data && data.user && data.user.address) {
-//     const { updatedAt, createdAt, ...address } = data.user.address;
-//     console.log(address);
-//     localStorage.setItem("address", JSON.stringify(address));
-//   }
-
-//   next();
-// }

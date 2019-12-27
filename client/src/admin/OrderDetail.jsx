@@ -1,15 +1,29 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, Redirect } from "react-router-dom";
 import { useLastLocation } from "react-router-last-location";
-import Layout from "../core/Layout";
+import {
+  Table,
+  Container,
+  Header,
+  Divider,
+  Button,
+  Card,
+  Grid,
+  Form,
+  Message
+} from "semantic-ui-react";
+import moment from "moment";
 
+/**custom imports */
+import Layout from "../layout/Layout";
+import DashboardLayout from "../layout/DashboardLayout";
+import { ButtonContainer } from "../common/components/customComponents";
 import { isAuthenticated } from "../auth";
 import { getSingleOrder, getStatusValues, updateStatusValues } from "./apiAdmin";
-import moment from "moment";
 
 const OrderDetail = props => {
   const {
-    user: { _id: userId, name: userName },
+    user: { _id: userId, role },
     token
   } = isAuthenticated();
 
@@ -19,18 +33,7 @@ const OrderDetail = props => {
   const [statusValues, setStatusValues] = useState([]);
   const [error, setError] = useState(false);
 
-  const {
-    _id: orderId,
-    status,
-    products,
-    amount,
-    user,
-    createdAt,
-    updatedAt,
-    address,
-    transaction_id,
-    paymentType
-  } = order;
+  const { _id, status, products, amount, user, createdAt, updatedAt, address, paymentType } = order;
 
   const loadSingleOrder = async () => {
     const orderId = props.match.params.orderId ? props.match.params.orderId : null;
@@ -55,133 +58,110 @@ const OrderDetail = props => {
   useEffect(() => {
     loadSingleOrder();
     loadStatusValues();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleChange = async (e, _id) => {
-    const response = await updateStatusValues(userId, token, orderId, e.target.value);
+  const handleChange = _id => async (e, { value }) => {
+    const response = await updateStatusValues(userId, token, _id, value);
     if (response.error) {
       setError(response.error);
     } else {
       loadSingleOrder();
     }
   };
-
-  const handleSubmit = async e => {
-    e.preventDefault();
-  };
-
-  // const shouldRedirect = () => {
-  //   if (redirect) return <Redirect to="/admin/category"></Redirect>;
-  // };
-
-  // const showSuccess = () => (
-  //   <div className="alert alert-info" style={{ display: success ? "" : "none" }}>
-  //     New Category has been created.
-  //   </div>
-  // );
+  /** status options use with category select element*/
+  const statusOptions =
+    statusValues &&
+    statusValues.map((s, i) => {
+      return { key: i, value: s, text: s };
+    });
 
   const showError = () => (
-    <div className="alert alert-danger" style={{ display: error ? "" : "none" }}>
+    <Message color="red" style={{ display: error ? "" : "none", fontSize: "1.3rem" }}>
       {error}
-    </div>
+    </Message>
   );
 
   if (lastLocation && lastLocation.pathname === "/cart") {
     return <Redirect to="/cart" />;
   }
+
   const goBack = () => (
-    <div className="container mt-5 mb-5">
-      <Link
-        to={
-          lastLocation && lastLocation.pathname === "/user/dashboard"
-            ? "/user/dashboard"
-            : "/admin/order"
-        }
-        className="text-warning"
-      >
-        Back to Dashboard &larr;
-      </Link>
-    </div>
+    <ButtonContainer>
+      <Button
+        fluid
+        as={Link}
+        to={`${role && role === 1 ? "/admin/dashboard" : "/user/dashboard"}`}
+        color="red"
+        icon="left arrow"
+        labelPosition="right"
+        style={{ marginBottom: "1rem" }}
+        content="Back to Dashboard"
+      />
+    </ButtonContainer>
   );
 
   const showOrderDetails = () => {
     return (
-      <div className="container-fluid">
-        <div className="card spur-card ">
-          <div className="card-header bg-primary text-white">
-            <div className="spur-card-title">
-              <h5> Order details</h5>
-            </div>
-          </div>
-          <div className="card-body">
-            <div className="row">
-              <div className="col">
-                <p>
-                  <span className="font-weight-bold">Order Id: </span>
-                  {orderId}
-                </p>
-                <p>
-                  {" "}
-                  <span className="font-weight-bold">Added on: </span>{" "}
-                  {createdAt && moment(createdAt).format("lll")}
-                </p>
-                <p>
-                  {" "}
-                  <span className="font-weight-bold">Last Update: </span>{" "}
-                  {updatedAt && moment(updatedAt).format("lll")}
-                </p>
-              </div>
-              <div className="col">
-                <p>
-                  {" "}
-                  <span className="font-weight-bold">Status: </span>
-                  <select
-                    name="status"
-                    className=""
-                    value={status}
-                    onChange={e => handleChange(e, orderId)}
-                    disabled={
-                      lastLocation && lastLocation.pathname === "/user/dashboard" ? true : null
-                    }
-                  >
-                    {statusValues &&
-                      statusValues.map((s, i) => (
-                        <option key={i} value={s}>
-                          {s}
-                        </option>
-                      ))}
-                  </select>
-                </p>
+      <Card fluid>
+        <Card.Content>
+          <Grid doubling stackable columns={3}>
+            <Grid.Row>
+              <Grid.Column>
+                <Form.Input fluid label="Order Id" value={`${_id}`} disabled />
+              </Grid.Column>
 
-                <p>
-                  {" "}
-                  <span className="font-weight-bold">Delivery Type: </span>
-                  {address ? "Home delivery" : "E-delivery"}
-                </p>
-                <p>
-                  {" "}
-                  <span className="font-weight-bold">Payment Type: </span>
-                  {paymentType}
-                </p>
-              </div>
-            </div>
-            <div className="row mt-5">
-              <div className="col">
-                <p>
-                  <span className="font-weight-bold">Customer Name: </span>
-                  {user && user.name}
-                </p>
-                <p>
-                  <span className="font-weight-bold">Delivery Address: </span>
-                  {address}
-                </p>
-              </div>
-            </div>
+              <Grid.Column>
+                <Form.Select
+                  fluid
+                  disabled={role === 1 ? false : true}
+                  label="Status"
+                  name="status"
+                  value={status}
+                  options={statusOptions}
+                  onChange={handleChange(_id)}
+                />
+              </Grid.Column>
+              <Grid.Column>
+                <Form.Input
+                  fluid
+                  label="Delivery type"
+                  value={`${address ? "Home delivery" : "E-delivery"}`}
+                  disabled
+                />
+              </Grid.Column>
 
-            {showProductDetails()}
-          </div>
-        </div>
-      </div>
+              <Grid.Column>
+                <Form.Input
+                  fluid
+                  label="Added on"
+                  value={`${createdAt && moment(createdAt).format("lll")}`}
+                  disabled
+                />
+              </Grid.Column>
+              <Grid.Column>
+                <Form.Input
+                  fluid
+                  label="Last Update"
+                  value={`${updatedAt && moment(updatedAt).format("lll")}`}
+                  disabled
+                />
+              </Grid.Column>
+
+              <Grid.Column>
+                <Form.Input fluid label="Payment Type" value={`${paymentType}`} disabled />
+              </Grid.Column>
+              <Grid.Column computer={5}>
+                <Form.Input fluid label="Customer Name" value={`${user && user.name}`} disabled />
+              </Grid.Column>
+
+              <Grid.Column computer={11}>
+                <Form.Input fluid label="Delivery Address" value={`${address}`} disabled />
+              </Grid.Column>
+            </Grid.Row>
+          </Grid>
+        </Card.Content>
+      </Card>
     );
   };
 
@@ -189,48 +169,48 @@ const OrderDetail = props => {
     let tableItems =
       products &&
       products.map(({ _id, name, count, price }) => (
-        <tr key={_id}>
-          <td>{name && name}</td>
-          <td>{price && price.toFixed(2)}</td>
-          <td>{count & count}</td>
-          <td> {price && count && (count * price).toFixed(2)}</td>
-        </tr>
+        <Table.Row key={_id}>
+          <Table.Cell>{name && name}</Table.Cell>
+          <Table.Cell>{price && price.toFixed(2)}</Table.Cell>
+          <Table.Cell>{count & count}</Table.Cell>
+          <Table.Cell> {price && count && (count * price).toFixed(2)}</Table.Cell>
+        </Table.Row>
       ));
 
     return (
-      <table className="ui stackable  celled  table mt-5">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Price</th>
-            <th>Quantity</th>
-            <th>Sub-total</th>
-          </tr>
-        </thead>
-        <tbody>
+      <Table>
+        <Table.Header>
+          <Table.Row>
+            <Table.HeaderCell>Name</Table.HeaderCell>
+            <Table.HeaderCell>Price</Table.HeaderCell>
+            <Table.HeaderCell>Quantity</Table.HeaderCell>
+            <Table.HeaderCell>Sub-total</Table.HeaderCell>
+          </Table.Row>
+        </Table.Header>
+        <Table.Body>
           {tableItems}
-          <tr>
-            <td></td>
-            <td></td>
-            <td>
-              <span className="font-weight-bold">Total:</span>
-            </td>
-            <td>
-              {" "}
-              <span className="font-weight-bold"> {amount && amount.toFixed(2)}</span>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+          <Table.Row>
+            <Table.Cell></Table.Cell>
+            <Table.Cell></Table.Cell>
+            <Table.Cell>Total:</Table.Cell>
+            <Table.Cell>{amount && amount.toFixed(2)}</Table.Cell>
+          </Table.Row>
+        </Table.Body>
+      </Table>
     );
   };
   return (
-    <Layout title="Order Details" description={`G'day ${userName}`} className="container">
-      <div className="row">
+    <Layout isDashboard={true}>
+      <DashboardLayout>
+        <Container fluid style={{ marginTop: "2rem" }}>
+          <Header as="h1">Order Details</Header>
+        </Container>
+        <Divider />
         {goBack()}
         {showError()}
         {showOrderDetails()}
-      </div>
+        {showProductDetails()}
+      </DashboardLayout>
     </Layout>
   );
 };
