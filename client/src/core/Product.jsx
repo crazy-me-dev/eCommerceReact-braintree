@@ -199,7 +199,7 @@ const Product = props => {
       {product && product.description && (
         <Container>
           {displayProduct()}
-          {relatedProducts > 0 && (
+          {relatedProducts.length > 0 && (
             <>
               <Header>Related Products</Header>
               <Grid>

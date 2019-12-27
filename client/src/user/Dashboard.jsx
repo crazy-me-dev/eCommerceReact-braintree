@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { Link } from "react-router-dom";
-import { Container, Divider, Button, Grid, Header, Table } from "semantic-ui-react";
+import { Container, Divider, Button, Grid, Header, Table, Icon } from "semantic-ui-react";
 import moment from "moment";
 
 /**custom imports */
@@ -118,7 +118,19 @@ const Dashboard = () => {
           </Button>
         </ButtonContainer>
 
-        <Container textAlign="center">{showOrders()}</Container>
+        <Container fluid style={{ marginTop: "1rem" }} textAlign="center">
+          {role === 0 ? (
+            showOrders()
+          ) : (
+            <>
+              <Header as="h1" color="blue" icon>
+                <Icon name="settings" />
+                Good things are coming....
+                <Header.Subheader>This page is under contruction</Header.Subheader>
+              </Header>{" "}
+            </>
+          )}
+        </Container>
       </DashboardLayout>
     </Layout>
   );
