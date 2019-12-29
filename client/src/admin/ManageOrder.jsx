@@ -84,8 +84,8 @@ const ManageOrder = () => {
           <Table.Cell>{user && user.name}</Table.Cell>
           <Table.Cell>${amount && amount.toFixed(2)}</Table.Cell>
           <Table.Cell>{address && address.substring(0, 25)}...</Table.Cell>
-          <Table.Cell>{createdAt && moment(createdAt).format("ll")}</Table.Cell>
-          <Table.Cell>{updatedAt && moment(updatedAt).format("ll")}</Table.Cell>
+          <Table.Cell>{createdAt && moment(createdAt).fromNow()}</Table.Cell>
+          <Table.Cell>{updatedAt && moment(updatedAt).fromNow()}</Table.Cell>
         </Table.Row>
       )
     );

@@ -20,6 +20,7 @@ import ManageOrder from "./admin/ManageOrder";
 import OrderDetail from "./admin/OrderDetail";
 import ShoppingCart from "./core/ShoppingCart";
 import Payment from "./core/Payment";
+
 const Routes = () => {
   return (
     <BrowserRouter>

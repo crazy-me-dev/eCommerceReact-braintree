@@ -185,7 +185,7 @@ const Search = props => {
             content="Update Product"
             position="top right"
             trigger={
-              <Button to={`/create/product/${product._id}`} as={Link} icon="edit" color="teal" />
+              <Button to={`/admin/product/${product._id}`} as={Link} icon="edit" color="teal" />
             }
           />
           <Popup

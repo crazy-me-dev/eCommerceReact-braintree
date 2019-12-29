@@ -233,12 +233,15 @@ exports.photo = (req, res, next) => {
   next();
 };
 
+/** this updateQuantity middleware */
 exports.updateQuantity = async (req, res, next) => {
+  /**creating the array of product queries to be updated  */
   let bulkOps = req.body.products.map(item => {
     return {
       updateOne: {
         filter: {
-          _id: item._id
+          _id: item._id,
+          quantity: { $gte: item.count }
         },
         update: {
           $inc: {
@@ -249,8 +252,36 @@ exports.updateQuantity = async (req, res, next) => {
       }
     };
   });
+  /**updating the queries in bulk */
+  let results = await Product.bulkWrite(bulkOps);
 
-  await Product.bulkWrite(bulkOps);
+  /** checking if the number of updated results match the number of queries*/
+  if (results.modifiedCount < bulkOps.length) {
+    /** If we have less modified items than queries, it means that one or more of the products didnt have enough stock
+     * hence we will roll back the update. Next lets create the queries for roll back
+     */
+    bulkOps = req.body.products.map(item => {
+      return {
+        updateOne: {
+          filter: {
+            _id: item._id,
+            quantity: { $gte: item.count }
+          },
+          update: {
+            $inc: {
+              quantity: +item.count,
+              sold: -item.count
+            }
+          }
+        }
+      };
+    });
+    /**executing the roll back  */
+    await Product.bulkWrite(bulkOps);
+    /** */
+    throw new Error("Sorry, we dont have enough stock for your order");
+  }
+  /** if everything goes right, lets call next */
 
   next();
 };

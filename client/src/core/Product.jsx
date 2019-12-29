@@ -8,7 +8,7 @@ import { useLastLocation } from "react-router-last-location";
 import Layout from "../layout/Layout";
 import MainCard from "./MainCard";
 import { getProduct, getRelatedProducts } from "./apiCore";
-import { Container, Message, Grid, Header, Card, Image, Button } from "semantic-ui-react";
+import { Container, Message, Grid, Header, Card, Image, Button, Label } from "semantic-ui-react";
 import noImage from "../images/No_Image_Available.jpg";
 import { addItem } from "./cartHelper";
 
@@ -26,6 +26,7 @@ const Title = styled.p`
   font-size: 1.5rem;
   font-family: "Segoe UI", sans-serif;
   padding-top: 1rem;
+  color: ${props => (props.color ? props.color : "")};
 `;
 
 const Product = props => {
@@ -102,6 +103,10 @@ const Product = props => {
           </Card.Header>
           <Card.Meta style={{ fontSize: "1.5rem" }}>{product && category.name}</Card.Meta>
           <Card.Description>
+            {quantity < 1 ? (
+              <Label icon="info" size="huge" color="red" ribbon content="Out of Stock" />
+            ) : null}
+
             <Container
               fluid
               textAlign="justified"
@@ -136,7 +141,7 @@ const Product = props => {
                 <Title>Added on: {createdAt && moment(createdAt).fromNow()}</Title>
               </Grid.Column>
               <Grid.Column mobile={16} tablet={8} computer={4}>
-                <Title>{quantity > 0 ? "In-Stock" : "Out of Stock "}</Title>
+                <Title color="red">{quantity > 0 ? "In-Stock" : "Out of Stock "}</Title>
               </Grid.Column>
             </Grid.Row>
           </Grid>
@@ -160,6 +165,7 @@ const Product = props => {
                   labelPosition="right"
                   onClick={addToCart}
                   content="Add to Cart"
+                  disabled={quantity < 1 ? true : false}
                 />
               </Grid.Column>
 

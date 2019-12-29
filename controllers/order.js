@@ -1,6 +1,9 @@
 const { Order } = require("../models/order");
 const { User } = require("../models/user");
-
+const sgMail = require("@sendgrid/mail");
+const contactEmail = require("../services/emailTemplates/contactEmail");
+const keys = require("../config/keys");
+const winston = require("winston");
 exports.create = async (req, res) => {
   req.body.user = req.profile._id;
   let order = new Order(req.body);
@@ -12,6 +15,31 @@ exports.create = async (req, res) => {
     { $push: { history: order._id } },
     { new: true }
   );
+
+  /**wrapping email section in a try catch so the error does not
+   * propagate to the error route middleware that handles errors globally
+   */
+  try {
+    const emailData = {
+      name: user.name,
+      amount: order.amount,
+      totalProducts: order.products.length,
+      redirectDomain: keys.redirectDomain
+    };
+
+    sgMail.setApiKey(keys.sendGridKey);
+    const msg = {
+      to: "moiscye@gmail.com",
+      from: "noreply@e-Shopland.com",
+      subject: "New order has been placed",
+      text: "message field",
+      html: contactEmail(emailData)
+    };
+    sgMail.send(msg);
+  } catch (e) {
+    /**logging error message to file */
+    winston.error("email not sent", e);
+  }
 
   res.json({ order });
 };

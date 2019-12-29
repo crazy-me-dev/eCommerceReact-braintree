@@ -25,6 +25,7 @@
   "license": "ISC",
   "dependencies": {
     "@hapi/joi": "^16.1.7",
+    "@sendgrid/mail": "^6.4.0",
     "body-parser": "^1.19.0",
     "braintree": "^2.21.0",
     "concurrently": "^5.0.0",

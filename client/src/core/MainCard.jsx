@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Link, Redirect } from "react-router-dom";
 import styled from "styled-components";
 import moment from "moment";
-import { Card, Icon, Button, Image, Header } from "semantic-ui-react";
+import { Card, Icon, Button, Image, Header, Label } from "semantic-ui-react";
 
 //custom imports
 import { addItem } from "./cartHelper";
@@ -20,7 +20,7 @@ const HeaderUI = styled(Header)`
   overflow: hidden;
 `;
 
-const MainCard = ({ product }) => {
+const MainCard = ({ product, history }) => {
   const [redirect, setRedirect] = useState(false);
 
   const { _id, name, price, hasPhoto, category, createdAt, shipping, quantity } = product;
@@ -45,7 +45,13 @@ const MainCard = ({ product }) => {
         </Button>
       </Link>
 
-      <Button color="red" animated="vertical" type="button" onClick={addToCart}>
+      <Button
+        color="green"
+        animated="vertical"
+        type="button"
+        onClick={addToCart}
+        disabled={quantity < 1 ? true : false}
+      >
         <Button.Content hidden>Cart</Button.Content>
         <Button.Content visible>
           <Icon name="shop" />
@@ -57,8 +63,30 @@ const MainCard = ({ product }) => {
   return (
     <Card style={{ marginBottom: "2rem" }}>
       {shouldRedirect()}
-      <Image src={hasPhoto ? `/api/product/photo/${_id}` : `${noImage}`} wrapped ui={false} />
+
+      <Image
+        as={Link}
+        to={`/product/${_id}`}
+        src={hasPhoto ? `/api/product/photo/${_id}` : `${noImage}`}
+        wrapped
+        ui={false}
+        label={
+          quantity < 1
+            ? {
+                size: "big",
+                color: "red",
+                content: "Out of Stock",
+                ribbon: "right",
+                icon: "info"
+              }
+            : null
+        }
+      />
+
       <Card.Content>
+        {/* <Label color="red" ribbon="right">
+          Out of Stock
+        </Label> */}
         <HeaderUI>{`${name.substring(0, 40)}`}</HeaderUI>
         <Card.Meta>{`Added ${moment(createdAt).fromNow()}`}</Card.Meta>
         <Card.Description>
