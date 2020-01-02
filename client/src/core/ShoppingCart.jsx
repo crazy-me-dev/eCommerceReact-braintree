@@ -211,7 +211,7 @@ const ShoppingCart = props => {
 
   const showLoginButton = () => (
     <Button fluid color="red" as={Link} to="/signin">
-      Sign In to Proceed
+      Sign In to Checkout
     </Button>
   );
 
@@ -224,8 +224,21 @@ const ShoppingCart = props => {
           </GridColumnUI>
 
           <GridColumnUI>
-            <Header as="h2"> AU${formatPrice(calculateTotal() * 2.4)}</Header>
+            <Header as="h2"> AU${formatPrice(calculateTotal())}</Header>
           </GridColumnUI>
+          <GridColumnUI>
+            <Header
+              as="h2"
+              style={{
+                textDecoration: "line-through",
+                color: "#c7c7c9"
+              }}
+            >
+              {" "}
+              AU${formatPrice(calculateTotal() * 2.4)}
+            </Header>
+          </GridColumnUI>
+
           <GridColumnUI>
             <Button fluid color="red" onClick={handleSubmit} content="Checkout" />
           </GridColumnUI>

@@ -61,7 +61,7 @@ const MainCard = ({ product, history }) => {
   );
 
   return (
-    <Card style={{ marginBottom: "2rem" }}>
+    <Card style={{ marginBottom: "2rem" }} fluid>
       {shouldRedirect()}
 
       <Image

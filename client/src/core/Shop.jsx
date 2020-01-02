@@ -33,6 +33,7 @@ const Shop = () => {
 
   const loadCategories = async () => {
     setLoadingCategory(true);
+    setError(false);
     const data = await getCategories();
     if (data.error) {
       setError(data.error);
@@ -115,7 +116,7 @@ const Shop = () => {
   );
 
   const showCategoryFilter = () => (
-    <Container>
+    <Container fluid>
       <Header as="h3">Filter by Categories</Header>
       {loadingCategory ? (
         <Header as="h3">Loading categories...</Header>
@@ -175,7 +176,7 @@ const Shop = () => {
 
   return (
     <Layout title="Shop Page" description="Search and find books of your choice">
-      <Container fluid style={{ marginTop: "3rem", padding: "0 3rem" }}>
+      <Container fluid style={{ marginTop: "3rem", padding: "0 .5rem" }}>
         {/* outter grid start */}
         <Grid>
           <Grid.Row>

@@ -63,6 +63,7 @@ const Home = () => {
           <>
             <Grid style={{ marginTop: "2rem" }} divided="vertically">
               <Header as="h1">New Arrivals</Header>
+
               <Grid.Row>{showProduct("byArrival")}</Grid.Row>
 
               <Header as="h1">Best Sellers</Header>
