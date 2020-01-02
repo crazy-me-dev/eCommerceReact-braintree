@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Link, Redirect } from "react-router-dom";
 import styled from "styled-components";
 import moment from "moment";
-import { Card, Icon, Button, Image, Header, Label } from "semantic-ui-react";
+import { Card, Icon, Button, Image, Header } from "semantic-ui-react";
 
 //custom imports
 import { addItem } from "./cartHelper";

@@ -30,6 +30,7 @@ exports.create = (req, res) => {
         error: "Image could not be uploaded"
       });
     }
+    console.log(fields);
 
     const { error } = validateProduct(fields);
     if (error) return res.status(400).json({ error: error.details[0].message });

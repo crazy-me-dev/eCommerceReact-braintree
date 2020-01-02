@@ -9,7 +9,8 @@ const productSchema = new mongoose.Schema(
       type: String,
       trim: true,
       required: true,
-      maxlength: 150
+      maxlength: 500,
+      unique: true
     },
     description: {
       type: String,
@@ -54,11 +55,10 @@ const productSchema = new mongoose.Schema(
 exports.validateProduct = product => {
   const schema = Joi.object({
     name: Joi.string()
-      .max(150)
+      .max(500)
       .required(),
     description: Joi.string().required(),
     price: Joi.number()
-      .integer()
       .min(0)
       .required(),
     category: Joi.objectId().required(),

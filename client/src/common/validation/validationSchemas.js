@@ -39,3 +39,21 @@ export const UpdateProfileSchema = yup.object().shape({
   country: yup.string().required(),
   zip: yup.string().required()
 });
+
+export const ProductSchema = yup.object().shape({
+  name: yup
+    .string()
+    .max(500)
+    .required(),
+  description: yup.string().required(),
+  price: yup
+    .number()
+    .min(0)
+    .required(),
+  category: yup.string().required(),
+  quantity: yup
+    .number()
+    .min(0)
+    .required(),
+  shipping: yup.boolean().required()
+});

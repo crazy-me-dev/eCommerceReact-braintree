@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
+import queryString from "query-string";
 import {
   Modal,
   Header,
@@ -19,7 +20,7 @@ import { isAuthenticated } from "../auth";
 import { getProducts, removeProduct } from "./apiAdmin";
 import Search from "../core/Search";
 
-const ManageProduct = () => {
+const ManageProduct = props => {
   /** get the userId and token to make request as admin */
   const {
     user: { _id: userId },
@@ -46,8 +47,16 @@ const ManageProduct = () => {
 
   /**fetch the products and sets the state */
   const loadProducts = async () => {
+    let data;
     setValues({ ...values, loading: true });
-    const data = await getProducts(limit, skip);
+    /**getting the query params to know which page to load */
+    const parsed = queryString.parse(props.location.search);
+    if (parsed && parsed.page) {
+      setPageNumber(parseInt(parsed.page));
+      setSkip((parseInt(parsed.page) - 1) * limit);
+      data = await getProducts(limit, skip);
+      props.history.location.search = "";
+    } else data = await getProducts(limit, skip);
     if (data.error) {
       setValues({ ...values, error: data.error, loading: false });
     } else {
@@ -160,7 +169,12 @@ const ManageProduct = () => {
             content="Update Product"
             position="top right"
             trigger={
-              <Button to={`/admin/product/${product._id}`} as={Link} icon="edit" color="teal" />
+              <Button
+                to={`/admin/product/${product._id}?page=${pageNumber}`}
+                as={Link}
+                icon="edit"
+                color="teal"
+              />
             }
           />
           <Popup
@@ -187,6 +201,7 @@ const ManageProduct = () => {
         <Table.Footer>
           <Table.Row>
             <Table.HeaderCell colSpan="6">
+              <Header>{`Page Number ${pageNumber}`}</Header>
               <Button.Group floated="right">
                 <Button
                   disabled={pageNumber === 1}

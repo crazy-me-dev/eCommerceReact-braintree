@@ -141,7 +141,9 @@ const Product = props => {
                 <Title>Added on: {createdAt && moment(createdAt).fromNow()}</Title>
               </Grid.Column>
               <Grid.Column mobile={16} tablet={8} computer={4}>
-                <Title color="red">{quantity > 0 ? "In-Stock" : "Out of Stock "}</Title>
+                <Title color={quantity > 0 ? "green" : "red"}>
+                  {quantity > 0 ? "In-Stock" : "Out of Stock "}
+                </Title>
               </Grid.Column>
             </Grid.Row>
           </Grid>

@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Link, Redirect } from "react-router-dom";
+import queryString from "query-string";
 import styled from "styled-components";
 import {
   Container,
@@ -10,7 +11,9 @@ import {
   Form,
   Button,
   Message,
-  Input
+  Input,
+  Label,
+  Image
 } from "semantic-ui-react";
 
 //custom imports
@@ -21,7 +24,9 @@ import { isAuthenticated } from "../auth";
 import { createProduct, updateProduct, getCategories, getProduct } from "../admin/apiAdmin";
 import { ButtonContainer } from "../common/components/customComponents";
 import useFocus from "../common/hooks/useFocus";
-
+import { validateProduct } from "../common/validation/validate";
+import useForm from "../common/hooks/useForm";
+import useAsyncState from "../common/hooks/useAsyncState";
 /**
  * Styling elements with styled-components
  * Semantic UI modified elements' name will end with 'UI'
@@ -38,61 +43,50 @@ const FormFieldUI = styled(Form.Field)`
   `}
 `;
 
-/**this values are taken from semantic UI label */
-const LabelCustom = styled.label`
-  display: block;
-  margin: 0 0 0.28571429rem 0;
-  color: rgba(0, 0, 0, 0.87);
-  font-size: 0.92857143em;
-  font-weight: 700;
-  text-transform: none;
-`;
+/**Initial state */
+
+const initialState = {
+  name: "",
+  description: "",
+  category: "",
+  shipping: false,
+  price: 0,
+  quantity: 0
+};
 
 const AddProduct = props => {
+  const {
+    user: { _id: userId },
+    token
+  } = isAuthenticated();
+
   /**input ref for product name. */
   const [inputRef, setInputFocus] = useFocus();
 
   //input ref for product  file
   const fileInputRef = useRef(null);
 
-  const {
-    user: { _id: userId },
-    token
-  } = isAuthenticated();
+  const { handleChange, handleSubmit, values, setValues, errors } = useForm(
+    submit,
+    initialState,
+    validateProduct
+  );
 
   const [isUpdating, setIsUpdating] = useState(false);
+  const [hasPhoto, setHasPhoto] = useState(false);
+  const [pageNumber, setPageNumber] = useState("");
+  const [productId, setProductId] = useState("");
   const [redirect, setRedirect] = useState(false);
-  const [values, setValues] = useState({
-    name: "",
-    description: "",
-    categories: [],
-    category: "",
-    categoryInput: "",
-    shipping: "",
-    price: "",
-    quantity: "",
-    photo: "",
+  const [categories, setCategories] = useState([]);
+  const [formData, setFormData] = useAsyncState(new FormData());
+  const [photoData, setPhotoData] = useState("");
+  const [status, setStatus] = useState({
+    error: false,
     loading: false,
-    error: "",
-    createdProduct: "",
-    redirectToProfile: false,
-    formData: ""
+    success: false
   });
 
-  const {
-    name,
-    price,
-    description,
-    categories,
-    category,
-    categoryInput,
-    shipping,
-    quantity,
-    loading,
-    error,
-    createdProduct,
-    formData
-  } = values;
+  const { error, loading, success } = status;
 
   useEffect(() => {
     load();
@@ -103,45 +97,77 @@ const AddProduct = props => {
    *  If updating a product, it fetches the product with the productId passed as parameter and the categories
    */
   const load = async () => {
+    setStatus({ ...status, error: false, loading: true });
     /**getting the productId passed as param */
-    const productId = props.match.params.productId ? props.match.params.productId : null;
+    const id = props.match.params.productId ? props.match.params.productId : null;
+    /**getting the query params to know which page to load */
+    const parsed = queryString.parse(props.location.search);
+    if (parsed && parsed.page) setPageNumber(parsed.page);
     let product;
     /**if we have the productId as parameter means it is updating */
-    if (productId) {
+    if (id) {
+      setProductId(id);
       setIsUpdating(true);
-      product = await getProduct(productId);
+      product = await getProduct(id);
     }
-    /**feteching categories */
+    /**fetching categories */
     const categoryList = await getCategories();
     /** checking if there is an error. If it is, the values object is set accordindly */
     if (categoryList.error) {
-      setValues({ ...values, error: categoryList.error, loading: false });
+      setStatus({ ...status, error: categoryList.error, loading: false });
       return;
     }
-    if (productId && product.error) {
+    if (id && product.error) {
       setValues({ ...values, error: product.error, loading: false });
       return;
     }
 
-    let incomingData = undefined;
-    /** If updating, the FormData is filled with the product that matches the productId param */
-    if (productId) incomingData = fillFormData(product);
+    /** If updating, values object is filled with the product that matches the id param */
+    if (id) {
+      setHasPhoto(product.hasPhoto);
+      setValues(fillUpdatingValues(product));
+    }
 
-    /** if everything goes well, we set all values obtained */
-    setValues({
-      ...values,
-      categories: categoryList,
-      formData: productId ? incomingData : new FormData(),
-      categoryInput: productId ? product.category._id : "",
-      loading: false,
-      ...product
-    });
+    setCategories(categoryList);
+    setStatus({ ...status, loading: false });
   };
 
-  /**this function fills the FormData object */
-  const fillFormData = product => {
-    return Object.keys(product).reduce((formData, key) => {
-      //These following keys are not part of the FormData object. So we skip them.
+  const { name, price, description, category, shipping, quantity } = values;
+
+  async function submit() {
+    let data;
+
+    setStatus({ ...status, error: false, loading: true });
+    //If there is a photo then add the photo element to the object passed as parameter
+    //If not, just pass the values object
+    let formDataUpdate = photoData
+      ? fillFormData({ ...values, photo: photoData })
+      : fillFormData(values);
+    //seeting the form data and wait till it updates
+    let updatedFormData = await setFormData(formDataUpdate);
+
+    /**if is updating, it calls the updatedProduct method */
+    if (isUpdating) data = await updateProduct(updatedFormData, userId, token, productId);
+    else data = await createProduct(updatedFormData, userId, token);
+    /**if creating a new product, it calls the createProduct method */
+    /** set error if there is any */
+    if (data.error) setStatus({ ...status, error: data.error, loading: false });
+    else {
+      /**if it is updating, redirects back to the Product Management dashboard */
+      if (isUpdating) setRedirect(true);
+      else {
+        setStatus({ ...status, error: false, loading: false, success: true });
+        setValues(initialState);
+        setFormData(new FormData());
+        setInputFocus();
+      }
+    }
+  }
+
+  /**this function removes unnecessary items in the product object received from back end */
+  const fillUpdatingValues = product => {
+    return Object.keys(product).reduce((items, key) => {
+      //These following keys are not part of the values object. So we skip them.
       if (
         key === "createdAt" ||
         key === "updatedAt" ||
@@ -150,100 +176,39 @@ const AddProduct = props => {
         key === "sold" ||
         key === "__v"
       )
-        return formData;
+        return items;
       //Since category is a nested object, we take the _id from it
-      else if (key === "category") formData.append(key, product[key]._id);
+      else if (key === "category") {
+        items[key] = product[key]._id;
+      }
       //finally, we append the rest of valid keys
-      else formData.append(key, product[key]);
-      return formData;
+      else {
+        items[key] = product[key];
+      }
+      return items;
+    }, {});
+  };
+
+  /**this function fills the FormData object */
+  const fillFormData = product => {
+    return Object.keys(product).reduce((fData, key) => {
+      fData.append(key, product[key]);
+      return fData;
     }, new FormData());
-  };
-
-  const validatePositiveNumber = value => {
-    /** this regex avoid characters other than numbers*/
-    const re = /^[0-9\b]+$/;
-    if (re.test(value)) {
-      let newValue;
-      //if the input value is less than 1, set newValue to 1
-      if (value < 0) newValue = 1;
-      //Double checking we got an int value
-      else newValue = parseInt(value);
-      return newValue;
-    }
-    return null;
-  };
-
-  /*** sets the form inputs to values object   */
-  const handleChange = (event, { name, value }) => {
-    let newValue = value;
-    if (name === "quantity" || name === "price") newValue = validatePositiveNumber(value);
-    if (name === "categoryInput") formData.set("category", newValue);
-    else formData.set(name, newValue);
-    setValues({
-      ...values,
-      [name]: newValue,
-      error: "",
-      loading: false,
-      createdProduct: ""
-    });
   };
 
   /** sets the file selected */
   const fileChange = e => {
-    formData.set(e.target.name, e.target.files[0]);
-    setValues({
-      ...values,
-      [e.target.name]: e.target.files[0],
-      error: "",
-      loading: false,
-      createdProduct: ""
-    });
-  };
-
-  const handleSubmit = async event => {
-    event.preventDefault();
-    setValues({ ...values, error: "", loading: true, createdProduct: "" });
-    let data;
-    /**if is updating, it calls the updatedProduct method */
-    if (isUpdating) {
-      data = await updateProduct(formData, userId, token, values._id);
-    } else data = await createProduct(formData, userId, token);
-    /**if creating a new product, it calls the createProduct method */
-    /** set error if there is any */
-    if (data.error) {
-      setValues({ ...values, error: data.error, loading: false });
-    } else {
-      /**if it is updating, redirects back to the Product Management dashboard */
-      if (isUpdating) {
-        setRedirect(true);
-      }
-      setValues({
-        ...values,
-        createdProduct: data.name,
-        loading: false,
-        name: "",
-        description: "",
-        categoryInput: "",
-        shipping: "",
-        price: "",
-        quantity: "",
-        photo: "",
-        error: "",
-        formData: new FormData()
-      });
-      setInputFocus();
-    }
+    setPhotoData(e.target.files[0]);
   };
 
   const shouldRedirect = () => {
-    if (redirect) return <Redirect to="/admin/product"></Redirect>;
+    if (redirect) return <Redirect to={`/admin/product?page=${pageNumber}`}></Redirect>;
   };
 
   const showSuccess = () => (
-    <Message color="green" style={{ display: createdProduct ? "" : "none", fontSize: "1.3rem" }}>
-      {`${
-        !isUpdating ? `${createdProduct} has been created.` : `${createdProduct} has been updated.`
-      }`}
+    <Message color="green" style={{ display: success ? "" : "none", fontSize: "1.3rem" }}>
+      {`${!isUpdating ? `New Product has been created.` : `$The product has been updated.`}`}
     </Message>
   );
 
@@ -263,7 +228,7 @@ const AddProduct = props => {
       <Button
         fluid
         as={Link}
-        to="/admin/product"
+        to={isUpdating ? `/admin/product?page=${pageNumber}` : `/admin/product`}
         color="red"
         icon="left arrow"
         labelPosition="right"
@@ -288,10 +253,9 @@ const AddProduct = props => {
 
   const newProductForm = () => {
     return (
-      <Form size="large">
+      <Form size="large" noValidate>
         {shouldRedirect()}
         <Segment stacked>
-          <LabelCustom>Name</LabelCustom>
           <Input
             fluid
             placeholder="Product name"
@@ -300,7 +264,13 @@ const AddProduct = props => {
             onChange={handleChange}
             ref={inputRef}
             autoFocus
+            error={errors && errors.name ? true : false}
           />
+          {errors && errors.name ? (
+            <Label basic color="red" pointing>
+              {errors.name}
+            </Label>
+          ) : null}
 
           <Form.Field
             style={{ minHeight: 150 }}
@@ -310,6 +280,7 @@ const AddProduct = props => {
             name="description"
             value={description}
             onChange={handleChange}
+            error={errors && errors.description && errors.description}
           />
 
           <Form.Group>
@@ -318,10 +289,11 @@ const AddProduct = props => {
               fluid
               label="Category"
               placeholder="Select"
-              name="categoryInput"
-              value={categoryInput}
+              name="category"
+              value={category}
               options={categoryOptions}
               onChange={handleChange}
+              error={errors && errors.category && errors.category}
             />
             <Form.Select
               width={4}
@@ -332,6 +304,7 @@ const AddProduct = props => {
               value={shipping}
               options={shippingOptions}
               onChange={handleChange}
+              error={errors && errors.shipping && errors.shipping}
             />
             <Form.Input
               width={4}
@@ -343,6 +316,7 @@ const AddProduct = props => {
               type="number"
               onChange={handleChange}
               min="0"
+              error={errors && errors.price && errors.price}
             />
             <Form.Input
               width={4}
@@ -354,9 +328,21 @@ const AddProduct = props => {
               value={quantity}
               type="number"
               onChange={handleChange}
+              error={errors && errors.quantity && errors.quantity}
             />
           </Form.Group>
           <Form.Group>
+            {productId && !photoData && hasPhoto && (
+              <FormFieldUI>
+                <Image
+                  src={`/api/product/photo/${productId}`}
+                  size="tiny"
+                  verticalAlign="middle"
+                  centered
+                />
+              </FormFieldUI>
+            )}
+
             <FormFieldUI>
               <Button
                 fluid
@@ -364,7 +350,7 @@ const AddProduct = props => {
                 color="olive"
                 size="large"
                 width={4}
-                content="Choose Photo"
+                content={photoData ? photoData.name : "Choose Photo"}
                 labelPosition="right"
                 icon="file"
                 onClick={() => fileInputRef.current.click()}
@@ -389,7 +375,7 @@ const AddProduct = props => {
             <FormFieldUI>
               <Button
                 as={Link}
-                to="/admin/product"
+                to={isUpdating ? `/admin/product?page=${pageNumber}` : `/admin/product`}
                 icon="x"
                 labelPosition="right"
                 fluid

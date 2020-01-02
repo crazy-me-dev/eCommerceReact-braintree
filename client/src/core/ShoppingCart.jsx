@@ -128,7 +128,9 @@ const ShoppingCart = props => {
   const showEmptyCartMessage = () => (
     <Message color="blue" style={{ display: items.length <= 0 ? "" : "none" }}>
       <Header as="h1">Your cart is empty</Header>
-      <Link to="/shop">Click here to continue shopping</Link>
+      <Button style={{ marginTop: "1rem" }} as={Link} to="/shop" color="teal" size="large">
+        Click here to continue shopping
+      </Button>
     </Message>
   );
 
