@@ -7,6 +7,7 @@ import { Card, Icon, Button, Image, Header } from "semantic-ui-react";
 //custom imports
 import { addItem } from "./cartHelper";
 import noImage from "../images/No_Image_Available.jpg";
+import { mediaUI as media } from "../utils/mediaQueriesBuilder";
 
 /**
  * Styling elements with styled-components
@@ -18,6 +19,14 @@ const HeaderUI = styled(Header)`
   min-height: 3rem;
   max-height: 3rem;
   overflow: hidden;
+`;
+
+const CardUI = styled(Card)`
+  margin-bottom: 2rem !important;
+  width: 100% !important;
+  /* padding: 0 !important; */
+  ${media.large`width: 90%!important;`}
+  ${media.wide`width: 80%!important;`}
 `;
 
 const MainCard = ({ product, history }) => {
@@ -61,7 +70,7 @@ const MainCard = ({ product, history }) => {
   );
 
   return (
-    <Card style={{ marginBottom: "2rem" }} fluid>
+    <CardUI>
       {shouldRedirect()}
 
       <Image
@@ -94,7 +103,7 @@ const MainCard = ({ product, history }) => {
         </Card.Description>
       </Card.Content>
       <Card.Content extra>{extra}</Card.Content>
-    </Card>
+    </CardUI>
   );
 };
 

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import styled from "styled-components";
 import { Container, Grid, Header, Button, List, Message, Icon } from "semantic-ui-react";
 
 //custom imports
@@ -8,6 +9,19 @@ import { getCategories, getFilteredProducts } from "./apiCore";
 import CheckboxList from "./CheckboxList";
 import Radiobox from "./Radiobox";
 import { prices } from "../common/staticContent";
+
+import { mediaUI as media } from "../utils/mediaQueriesBuilder";
+
+/**
+ * Styling elements with styled-components
+ * Semantic UI modified elements' name will end with 'UI'
+ */
+
+const ContainerUI = styled(Container)`
+  margin-top: 3rem;
+  ${media.mobile`padding: 0 2rem;`}
+  ${media.tablet`padding: 0 3rem;`}
+`;
 
 const Shop = () => {
   const [categories, setCategories] = useState([]);
@@ -176,7 +190,7 @@ const Shop = () => {
 
   return (
     <Layout title="Shop Page" description="Search and find books of your choice">
-      <Container fluid style={{ marginTop: "3rem", padding: "0 .5rem" }}>
+      <ContainerUI fluid>
         {/* outter grid start */}
         <Grid>
           <Grid.Row>
@@ -220,7 +234,7 @@ const Shop = () => {
           </Grid.Row>
         </Grid>
         {/* outter grid ends */}
-      </Container>
+      </ContainerUI>
     </Layout>
   );
 };
