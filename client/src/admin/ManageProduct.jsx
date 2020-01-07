@@ -201,7 +201,7 @@ const ManageProduct = props => {
         <Table.Footer>
           <Table.Row>
             <Table.HeaderCell colSpan="6">
-              <Header>{`Page Number ${pageNumber}`}</Header>
+              <Header floated="left" style={{ marginTop: 5 }}>{`Page Number ${pageNumber}`}</Header>
               <Button.Group floated="right">
                 <Button
                   disabled={pageNumber === 1}
