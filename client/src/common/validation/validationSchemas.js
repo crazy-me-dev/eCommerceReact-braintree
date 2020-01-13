@@ -51,7 +51,6 @@ export const ProductSchema = yup.object().shape({
     .min(0)
     .required(),
   category: yup.string().required(),
-  sold: yup.number().min(0),
   quantity: yup
     .number()
     .min(0)
