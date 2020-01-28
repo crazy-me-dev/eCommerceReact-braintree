@@ -41,9 +41,8 @@ export const updateItem = (productId, count) => {
     }
 
     cart.map((product, i) => {
-      if (product._id === productId) {
-        cart[i].count = count;
-      }
+      if (product._id === productId) cart[i].count = count;
+      return cart[i];
     });
 
     localStorage.setItem("cart", JSON.stringify(cart));
@@ -81,7 +80,6 @@ export const getAddress = () => {
 export const emptyCart = (next = f => f) => {
   if (typeof window !== "undefined") {
     localStorage.removeItem("cart");
-    localStorage.removeItem("address");
     next();
   }
 };

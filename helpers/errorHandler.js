@@ -10,10 +10,7 @@ const uniqueMessage = error => {
       error.message.lastIndexOf("_1")
     );
 
-    output =
-      fieldName.charAt(0).toUpperCase() +
-      fieldName.slice(1) +
-      " already exists";
+    output = fieldName.charAt(0).toUpperCase() + fieldName.slice(1) + " already exists";
   } catch (ex) {
     output = "Unique field already exists";
   }
@@ -26,7 +23,7 @@ const uniqueMessage = error => {
  */
 exports.errorHandler = error => {
   let message = error.message;
-  console.log(message);
+
   if (error.code) {
     switch (error.code) {
       case 11000:

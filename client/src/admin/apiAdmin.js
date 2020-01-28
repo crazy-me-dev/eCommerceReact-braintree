@@ -117,9 +117,9 @@ export const getProduct = async productId => {
   }
 };
 
-export const getProducts = async (limit = 6) => {
+export const getProducts = async (limit = 6, skip = 0) => {
   try {
-    const res = await axios.get(`/api/products?limit=${limit}`);
+    const res = await axios.get(`/api/products?limit=${limit}&&skip=${skip}`);
     return res.data;
   } catch (e) {
     //the error in axios comes in response.data object
@@ -179,8 +179,6 @@ export const getStatusValues = async (userId, token) => {
     return res.data;
   } catch (e) {
     //the error in axios comes in response.data object
-    console.log(e);
-
     return e.response.data;
   }
 };
@@ -198,8 +196,6 @@ export const updateStatusValues = async (userId, token, orderId, newStatus) => {
     return res.data;
   } catch (e) {
     //the error in axios comes in response.data object
-    console.log(e);
-
     return e.response.data;
   }
 };

@@ -1,26 +1,29 @@
 import React, { useState, useEffect } from "react";
-import Layout from "./Layout";
-import Card from "./Card";
+import { Container, Grid, Header, Button, List, Message, Icon } from "semantic-ui-react";
+
+//custom imports
+import Layout from "../layout/Layout";
+import MainCard from "./MainCard";
 import { getCategories, getFilteredProducts } from "./apiCore";
-import Checkbox from "./Checkbox";
+import CheckboxList from "./CheckboxList";
 import Radiobox from "./Radiobox";
-import { prices } from "./staticContent";
+import { prices } from "../common/staticContent";
 
 const Shop = () => {
   const [categories, setCategories] = useState([]);
   const [loadingCategory, setLoadingCategory] = useState(false);
   const [error, setError] = useState(false);
   const [skip, setSkip] = useState(0);
-  const [limit, setLimit] = useState(6);
+  const [limit, setLimit] = useState(8);
   const [size, setSize] = useState(0);
   const [filteredResults, setFilteredResults] = useState([]);
-
   const [myFilters, setMyFilters] = useState({
     filters: { category: [], price: [] }
   });
 
   useEffect(() => {
     init();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const init = () => {
@@ -58,16 +61,25 @@ const Shop = () => {
       setError(data.error);
     } else {
       setFilteredResults([...filteredResults, ...data]);
-
       setSize(data.length);
       setSkip(toSkip);
     }
   };
 
+  /**
+   *
+   * @param filters  {*filters will be coming from the callback function either Checkbox or Radiobox Components}
+   * @param filterBy  {*filter wil either be "price" or category}
+   */
+
   const handleFilters = (filters, filterBy) => {
+    //store the previous myFilters in new filters
     const newFilters = { ...myFilters };
+    //replacing the incoming filters
     newFilters.filters[filterBy] = filters;
+    //calling loadFilteredResults to reload results
     loadFilteredResults(myFilters.filters);
+    //Finally setting myFilters with updated array in newFilters
     setMyFilters(newFilters);
   };
 
@@ -75,78 +87,139 @@ const Shop = () => {
     return (
       size > 0 &&
       size >= limit && (
-        <button onClick={loadMore} className="btn btn-warning mb-8">
+        <Button
+          style={{ marginLeft: "1rem" }}
+          icon
+          labelPosition="right"
+          basic
+          color="red"
+          size="huge"
+          onClick={loadMore}
+        >
           Load More
-        </button>
+          <Icon name="plus" />
+        </Button>
       )
     );
   };
-  const showPriceFilter = className => (
-    <div className={className}>
-      <h4>Filter by Price</h4>
+  const showPriceFilter = () => (
+    <Container style={{ marginTop: "2rem" }}>
+      <Header as="h3">Filter by Price</Header>
       <div>
         <Radiobox
           prices={prices}
           handleFilters={filters => handleFilters(filters, "price")}
         ></Radiobox>
       </div>
-    </div>
+    </Container>
   );
 
-  const showCategoryFilter = className => (
-    <div className={className}>
-      <h4>Filter by Categories</h4>
+  const showCategoryFilter = () => (
+    <Container>
+      <Header as="h3">Filter by Categories</Header>
       {loadingCategory ? (
-        <h5>Loading categories...</h5>
+        <Header as="h3">Loading categories...</Header>
       ) : (
-        <ul>
-          <Checkbox
+        <List>
+          <CheckboxList
             categories={categories}
             handleFilters={filters => handleFilters(filters, "category")}
-          ></Checkbox>
-        </ul>
+          />
+        </List>
       )}
-    </div>
+    </Container>
   );
 
-  const showProduc = () => {
+  const showProduct = () => {
     let productList = filteredResults;
     productList = productList ? (
       productList.map(product => (
-        <div key={product._id} className="col-xl-3 col-lg-6 col-md-6">
-          <Card product={product} />
-        </div>
+        <Grid.Column key={product._id}>
+          <MainCard product={product} />
+        </Grid.Column>
       ))
     ) : (
-      <h4>Loading...</h4>
+      <Header as="h2">Loading...</Header>
     );
     return productList;
   };
 
-  const showError = () => (
-    <div className="alert alert-danger" role="alert">
-      {error}
-    </div>
+  const showErrorMessage = () => (
+    <Message size="large" style={{ marginBottom: "3rem" }}>
+      <Header as="h1">Sorry, something went wrong internally!</Header>
+      <p style={{ marginTop: "2rem", fontSize: "2rem", color: "F8F8F9" }}>
+        Try the following ideas to ensure results:
+      </p>
+      <List bulleted style={{ fontSize: "1.5rem", color: "F8F8F9", marginBottom: "1rem" }}>
+        <List.Item>Make sure you are connected to internet.</List.Item>
+        <List.Item>Make sure you have enough disk space.</List.Item>
+        <List.Item>Restart the app.</List.Item>
+        <List.Item>Full error: ${error}</List.Item>
+      </List>
+    </Message>
+  );
+  const showEmptyResultsMessage = () => (
+    <Grid.Column mobile={16} tablet={8} computer={12}>
+      <Message size="small" style={{ marginBottom: "3rem" }}>
+        <Header as="h1">Sorry, we couldn't find any results for your filtering</Header>
+        <p style={{ marginTop: "2rem", fontSize: "2rem", color: "F8F8F9" }}>
+          Try adjusting your filters. Here are some ideas:
+        </p>
+        <List bulleted style={{ fontSize: "1.5rem", color: "F8F8F9", marginBottom: "1rem" }}>
+          <List.Item>Make sure your desired category is selected.</List.Item>
+          <List.Item>Change the price range.</List.Item>
+        </List>
+      </Message>
+    </Grid.Column>
   );
 
   return (
-    <Layout
-      title="Shop Page"
-      description="Search and find books of your choice"
-      className="container-fluid"
-    >
-      <div className="row">
-        <div className="col-lg-3 col-md-12 col-sm-12 mb-3">
-          <div className="row">
-            {error ? showError() : showCategoryFilter("col-lg-12 col-md-6 col-sm-6")}
-            {error ? showError() : showPriceFilter("col-lg-12 col-md-6 col-sm-6")}
-          </div>
-        </div>
-        <div className="col-lg-9">
-          <div className="row">{showProduc("byArrival")}</div>
-          <div>{error ? showError() : loadMoreButton()}</div>
-        </div>
-      </div>
+    <Layout title="Shop Page" description="Search and find books of your choice">
+      <Container fluid style={{ marginTop: "3rem", padding: "0 3rem" }}>
+        {/* outter grid start */}
+        <Grid>
+          <Grid.Row>
+            <Grid.Column mobile={16} tablet={6} computer={4}>
+              {/* inner grid start */}
+              <Grid style={{ marginBottom: "3rem" }}>
+                <Grid.Row centered>
+                  {error ? (
+                    showErrorMessage()
+                  ) : (
+                    <Grid.Column mobile={12} tablet={12} computer={12}>
+                      {showCategoryFilter()}
+                    </Grid.Column>
+                  )}
+
+                  {error ? (
+                    showErrorMessage()
+                  ) : (
+                    <Grid.Column mobile={12} tablet={12} computer={12}>
+                      {showPriceFilter()}
+                    </Grid.Column>
+                  )}
+                </Grid.Row>
+              </Grid>
+              {/* inner grid ends */}
+            </Grid.Column>
+            {size <= 0 ? (
+              showEmptyResultsMessage()
+            ) : (
+              <Grid.Column mobile={16} tablet={10} computer={12}>
+                {/* inner grid start */}
+                <Grid stackable doubling columns={4}>
+                  <Header as="h1">{`${size} products found`}</Header>
+
+                  <Grid.Row>{showProduct("byArrival")}</Grid.Row>
+                  <Grid.Row>{error ? showErrorMessage : loadMoreButton()}</Grid.Row>
+                </Grid>
+                {/* inner grid ends */}
+              </Grid.Column>
+            )}
+          </Grid.Row>
+        </Grid>
+        {/* outter grid ends */}
+      </Container>
     </Layout>
   );
 };

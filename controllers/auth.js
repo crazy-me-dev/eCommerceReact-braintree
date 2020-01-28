@@ -16,10 +16,7 @@ exports.signup = async (req, res) => {
 exports.signin = async (req, res) => {
   const { email: incomingEmail, password } = req.body;
 
-  const user = await User.findOne({ email: incomingEmail }).populate({
-    path: "history"
-  });
-
+  const user = await User.findOne({ email: incomingEmail });
   if (!user) {
     return res.status(400).json({ error: "User with that email does not exists. Please signup!" });
   }

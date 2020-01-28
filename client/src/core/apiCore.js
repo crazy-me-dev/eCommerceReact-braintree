@@ -1,7 +1,7 @@
 import axios from "axios";
 import queryString from "query-string";
 
-export const getProducts = async (sortBy, order = "desc", limit = 6) => {
+export const getProducts = async (sortBy, order = "desc", limit = 8) => {
   try {
     const res = await axios.get(`/api/products?sortBy=${sortBy}&order=${order}&limit=${limit}`);
     return res.data;

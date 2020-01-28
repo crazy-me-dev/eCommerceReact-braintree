@@ -26,7 +26,6 @@ export const authenticate = (data, next) => {
 
     if (data && data.user && data.user.address) {
       const { updatedAt, createdAt, ...address } = data.user.address;
-      console.log(address);
       localStorage.setItem("address", JSON.stringify(address));
     }
 

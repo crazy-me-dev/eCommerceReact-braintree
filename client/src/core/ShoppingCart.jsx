@@ -1,16 +1,34 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import Layout from "./Layout";
+import {
+  Grid,
+  Container,
+  Header,
+  Button,
+  Input,
+  Message,
+  Form,
+  Segment,
+  Accordion
+} from "semantic-ui-react";
+import styled from "styled-components";
+
+/**Custom imports */
+import Layout from "../layout/Layout";
 import CheckoutCard from "./CheckoutCard";
 import { getCartItems, addAddress, getAddress } from "./cartHelper";
 import { isAuthenticated, updateUserAddress } from "../auth";
 
-const ShoppingCart = props => {
-  const {
-    user: { _id: userId },
-    token
-  } = isAuthenticated();
+/**
+ * Styling elements with styled-components
+ * Semantic UI modified elements' name will end with 'UI'
+ */
+const GridColumnUI = styled(Grid.Column)`
+  margin-bottom: 1rem !important;
+`;
 
+const ShoppingCart = props => {
+  const [activeIndex, setActiveIndex] = useState(0);
   const [items, setItems] = useState([]);
   const [run, setRun] = useState(false);
   const [hasAddress, sethasAddress] = useState(false);
@@ -22,19 +40,19 @@ const ShoppingCart = props => {
     zip: "",
     country: ""
   });
+  const { user, token } = isAuthenticated() && isAuthenticated();
 
   useEffect(() => {
     setItems(getCartItems());
 
-    //this section acn go in another useEffect
     const storedAddress = getAddress();
     if (storedAddress) {
       setAddress({ ...address, ...storedAddress, error: false });
       sethasAddress(true);
     } else setAddress({ ...address, error: false });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [run]);
 
-  //could go in cartHelper
   const calculateTotal = () => {
     if (items.length > 0) {
       const total = items.reduce((sum, item) => {
@@ -62,11 +80,15 @@ const ShoppingCart = props => {
       props.history.push("/payment");
       return;
     }
+    saveAddress();
+  };
+
+  const saveAddress = async () => {
     if (validateForm()) {
       //save address to back end
       const { error, ...newAddress } = address;
       //handle errors here
-      const newUser = await updateUserAddress(newAddress, userId, token);
+      const newUser = await updateUserAddress(newAddress, user._id, token);
       const { updatedAt, createdAt, ...newSavedAddress } = newUser.address;
       addAddress(newSavedAddress, props.history.push("/payment"));
     } else {
@@ -81,9 +103,15 @@ const ShoppingCart = props => {
     return (
       <span>
         {newPrice}
-        <sup className="decimal">{decimalPart}</sup>
+        <sup style={{ fontSize: 14 }}>{decimalPart}</sup>
       </span>
     );
+  };
+
+  const handleClick = (e, titleProps) => {
+    const { index } = titleProps;
+    const newIndex = activeIndex === index ? -1 : index;
+    setActiveIndex(newIndex);
   };
 
   const showCartItems = () => {
@@ -93,19 +121,19 @@ const ShoppingCart = props => {
   };
 
   const showError = () => (
-    <div className="alert alert-danger p-3" style={{ display: address.error ? "" : "none" }}>
+    <Message color="red" style={{ display: address.error ? "" : "none" }}>
       Please Enter a valid address
-    </div>
+    </Message>
   );
   const showEmptyCartMessage = () => (
-    <div className="alert alert-info p-3" style={{ display: items.length <= 0 ? "" : "none" }}>
-      <h1>Your cart is empty</h1>
+    <Message color="blue" style={{ display: items.length <= 0 ? "" : "none" }}>
+      <Header as="h1">Your cart is empty</Header>
       <Link to="/shop">Click here to continue shopping</Link>
-    </div>
+    </Message>
   );
 
-  const handleChange = event => {
-    setAddress({ ...address, error: false, [event.target.name]: event.target.value });
+  const handleChange = (event, { name, value }) => {
+    setAddress({ ...address, error: false, [name]: value });
   };
 
   const buildAddress = ({ street, city, state, zip, country }) => {
@@ -113,145 +141,135 @@ const ShoppingCart = props => {
   };
 
   const addressForm = () => (
-    <div className="mt-4">
-      <div className="col">
-        <div className="form-group">
-          <input
-            type="text"
-            name="street"
-            value={address.street}
-            placeholder="Enter street"
-            className="form-control"
-            onChange={handleChange}
-          />
-        </div>
-      </div>
-      <div className="col">
-        <div className="form-group">
-          <input
-            type="text"
-            name="city"
-            value={address.city}
-            placeholder="Enter City"
-            className="form-control"
-            onChange={handleChange}
-          />
-        </div>
-      </div>
-      <div className="col">
-        <div className="form-group">
-          <input
-            type="text"
-            name="state"
-            value={address.state}
-            placeholder="Enter state"
-            className="form-control"
-            onChange={handleChange}
-          />
-        </div>
-      </div>
-      <div className="col">
-        <div className="form-group">
-          <input
-            type="text"
-            name="zip"
-            value={address.zip}
-            placeholder="Enter ZIP/Post code"
-            className="form-control"
-            onChange={handleChange}
-          />
-        </div>
-      </div>
-      <div className="col">
-        <div className="form-group">
-          <input
-            type="text"
-            name="country"
-            value={address.country}
-            placeholder="Enter country"
-            className="form-control"
-            onChange={handleChange}
-          />
-        </div>
-      </div>
-    </div>
+    <Form>
+      <Segment stacked>
+        <Form.Input
+          fluid
+          type="text"
+          placeholder="Street"
+          name="street"
+          value={address.street}
+          onChange={handleChange}
+        />
+        <Form.Input
+          fluid
+          placeholder="City"
+          type="text"
+          name="city"
+          value={address.city}
+          onChange={handleChange}
+        />
+        <Form.Input
+          fluid
+          type="text"
+          placeholder="State"
+          name="state"
+          value={address.state}
+          onChange={handleChange}
+        />
+        <Form.Input
+          fluid
+          placeholder="Zip/Post Code"
+          type="text"
+          name="zip"
+          value={address.zip}
+          onChange={handleChange}
+        />
+        <Form.Input
+          fluid
+          placeholder="Country"
+          type="text"
+          name="country"
+          value={address.country}
+          onChange={handleChange}
+        />
+
+        <Button fluid color="red" onClick={handleSubmit} content="Checkout" />
+      </Segment>
+    </Form>
   );
 
-  const showAddressSection = () => (
-    <>
-      <h4 className="mb-4">Delivery Address:</h4>
-      {hasAddress ? buildAddress(address) : addressForm()}
-      <button
-        style={{ display: hasAddress ? "" : "none" }}
-        className="btn btn-outline-primary btn-lg btn-block mt-3"
-        onClick={() => sethasAddress(false)}
-      >
-        Change Address
-      </button>
-    </>
-  );
-
-  const showSideSection = () => (
-    <>
-      {" "}
-      {showTotalSection()}
-      {showError()}
-      {isAddressRequired() && showAddressSection()}
-    </>
-  );
+  const showAddressSection = () =>
+    isAddressRequired() && (
+      <GridColumnUI>
+        {showError()}
+        <Header as="h3" style={{ marginTop: "1rem" }}>
+          Delivery Address:
+        </Header>
+        {hasAddress ? buildAddress(address) : addressForm()}
+        <Button
+          style={{ display: hasAddress ? "" : "none", marginBottom: "1rem" }}
+          color="blue"
+          fluid
+          onClick={() => sethasAddress(false)}
+          content="Change Address"
+        />
+      </GridColumnUI>
+    );
 
   const showLoginButton = () => (
-    <Link to="/signin" className="btn btn-warning btn-lg btn-block mt-3">
+    <Button fluid color="red" as={Link} to="/signin">
       Sign In to Proceed
-    </Link>
+    </Button>
   );
 
   const showTotalSection = () => {
     return (
-      <div>
-        <h5>Total:</h5>
-        <h1 className="font-weight-bold">AU${formatPrice(calculateTotal())}</h1>
-        <h5 className="text-light text-muted old-price">
-          AU${formatPrice(calculateTotal() * 2.4)}
-        </h5>
+      <Grid columns="one">
+        <Grid.Row>
+          <GridColumnUI>
+            <Header as="h3">Total:</Header>
+          </GridColumnUI>
 
-        <button
-          onClick={handleSubmit}
-          type="button"
-          className="btn btn-danger btn-lg btn-block mt-3"
-        >
-          Checkout
-        </button>
-        <div className="input-group mt-3">
-          <input
-            type="text"
-            className="form-control"
-            placeholder="Enter Coupon"
-            aria-label=""
-            aria-describedby="basic-addon1"
-          />
-          <div className="input-group-append mb-4">
-            <button className="btn btn-danger" type="button">
-              Apply
-            </button>
-          </div>
-        </div>
-      </div>
+          <GridColumnUI>
+            <Header as="h2"> AU${formatPrice(calculateTotal() * 2.4)}</Header>
+          </GridColumnUI>
+          <GridColumnUI>
+            <Button fluid color="red" onClick={handleSubmit} content="Checkout" />
+          </GridColumnUI>
+          <GridColumnUI>
+            <Input
+              fluid
+              label={{ content: "Apply", color: "red" }}
+              labelPosition="right"
+              placeholder="Enter coupon"
+            />
+          </GridColumnUI>
+          {showAddressSection()}
+        </Grid.Row>
+      </Grid>
     );
   };
 
   return (
-    <Layout title="Shopping Cart" description="Manage all your items here!" className="container">
-      {items.length <= 0 ? (
-        showEmptyCartMessage()
-      ) : (
-        <div className="row">
-          <div className="col-lg-9 col-md-12 ">{showCartItems()}</div>
-          <div className="col-lg-3 col-md-12 order-first  order-lg-2 ">
-            {isAuthenticated() ? showSideSection() : showLoginButton()}
-          </div>
-        </div>
-      )}
+    <Layout title="Shopping Cart" description="Manage all your items here!">
+      <Container style={{ marginTop: "1rem" }}>
+        {items.length <= 0 ? (
+          showEmptyCartMessage()
+        ) : (
+          <Grid reversed="computer">
+            <Grid.Row>
+              <Grid.Column mobile={16} tablet={16} computer={4}>
+                {isAuthenticated() ? showTotalSection() : showLoginButton()}
+              </Grid.Column>
+              <Grid.Column mobile={16} tablet={16} computer={12}>
+                <Accordion fluid>
+                  <Accordion.Title active={activeIndex === 0} index={0} onClick={handleClick}>
+                    <Header
+                      as="h2"
+                      icon={activeIndex !== 0 ? "angle right" : "angle down"}
+                      content={activeIndex !== 0 ? "Show Cart Items" : "Hide Cart Items"}
+                    />
+                  </Accordion.Title>
+                  <Accordion.Content active={activeIndex === 0}>
+                    {showCartItems()}
+                  </Accordion.Content>
+                </Accordion>
+              </Grid.Column>
+            </Grid.Row>
+          </Grid>
+        )}
+      </Container>
     </Layout>
   );
 };

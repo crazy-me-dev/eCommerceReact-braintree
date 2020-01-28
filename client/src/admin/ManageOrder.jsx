@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from "react";
 import moment from "moment";
 import { Link } from "react-router-dom";
-import Layout from "../core/Layout";
+import { Container, Divider, Header, Table, Select } from "semantic-ui-react";
 
+/**custom imports */
+import Layout from "../layout/Layout";
+import DashboardLayout from "../layout/DashboardLayout";
 import { isAuthenticated } from "../auth";
 import { getOrders, getStatusValues, updateStatusValues } from "./apiAdmin";
 
@@ -42,10 +45,11 @@ const ManageOrder = () => {
   useEffect(() => {
     loadOrders();
     loadStatusValues();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleChange = async (e, _id) => {
-    const response = await updateStatusValues(userId, token, _id, e.target.value);
+  const handleChange = _id => async (e, { value }) => {
+    const response = await updateStatusValues(userId, token, _id, value);
     if (response.error) {
       setValues({ ...values, error: response.error });
     } else {
@@ -53,63 +57,67 @@ const ManageOrder = () => {
     }
   };
 
+  /** status options use with category select element*/
+  const statusOptions =
+    statusValues &&
+    statusValues.map((s, i) => {
+      return { key: i, value: s, text: s };
+    });
+
   const showOrders = () => {
     let tableItems = orderList.map(
       ({ status, _id, amount, address, createdAt, updatedAt, user }) => (
-        <tr key={_id}>
-          <td>
+        <Table.Row key={_id}>
+          <Table.Cell>
             <Link to={`/admin/order/${_id}`}>{_id && _id}</Link>
-          </td>
-          <td>
-            <select name="status" className="" value={status} onChange={e => handleChange(e, _id)}>
-              {statusValues &&
-                statusValues.map((s, i) => (
-                  <option key={i} value={s}>
-                    {s}
-                  </option>
-                ))}
-            </select>
-          </td>
-          <td>{user && user.name}</td>
-          <td>${amount && amount.toFixed(2)}</td>
-          <td width="25%">{address && address.substring(0, 25)}...</td>
-          <td>{createdAt && moment(createdAt).format("ll")}</td>
-          <td>{updatedAt && moment(updatedAt).format("ll")}</td>
-        </tr>
+          </Table.Cell>
+          <Table.Cell>
+            <Select
+              width={4}
+              label="Status"
+              name="status"
+              value={status}
+              options={statusOptions}
+              onChange={handleChange(_id)}
+            />
+          </Table.Cell>
+          <Table.Cell>{user && user.name}</Table.Cell>
+          <Table.Cell>${amount && amount.toFixed(2)}</Table.Cell>
+          <Table.Cell>{address && address.substring(0, 25)}...</Table.Cell>
+          <Table.Cell>{createdAt && moment(createdAt).format("ll")}</Table.Cell>
+          <Table.Cell>{updatedAt && moment(updatedAt).format("ll")}</Table.Cell>
+        </Table.Row>
       )
     );
 
     return (
-      <table className="ui stackable celled single line table">
-        <thead>
-          <tr>
-            <th>Order Id</th>
-            <th>Status</th>
-            <th>Customer</th>
-            <th>Amount</th>
-            <th>Delivery Adress</th>
-            <th>Created</th>
-            <th>Last Update</th>
-          </tr>
-        </thead>
-        <tbody>{tableItems}</tbody>
-      </table>
+      <Table>
+        <Table.Header>
+          <Table.Row>
+            <Table.HeaderCell>Order Id</Table.HeaderCell>
+            <Table.HeaderCell>Status</Table.HeaderCell>
+            <Table.HeaderCell>Customer</Table.HeaderCell>
+            <Table.HeaderCell>Amount</Table.HeaderCell>
+            <Table.HeaderCell>Delivery Adress</Table.HeaderCell>
+            <Table.HeaderCell>Created</Table.HeaderCell>
+            <Table.HeaderCell>Last Update</Table.HeaderCell>
+          </Table.Row>
+        </Table.Header>
+        <Table.Body>{tableItems}</Table.Body>
+      </Table>
     );
   };
 
   return (
-    <Layout title="Orders" description={`Order management`} className="container">
-      <Link to="/admin/dashboard" className="btn btn-warning mb-3 ">
-        Back to Dashboard
-      </Link>
-
-      <div className="card mb-5">
-        <div className="card-header">
-          <h3 className="card-title">Purchase History ({orderList.length} Items)</h3>
-        </div>
-
-        <div className="card-body">{showOrders()}</div>
-      </div>
+    <Layout isDashboard={true}>
+      <DashboardLayout>
+        <Container fluid style={{ marginTop: "2rem" }}>
+          <Header as="h1">Order Management</Header>
+        </Container>
+        <Divider />
+        <Header as="h3">List of Orders</Header>
+        {showOrders()}
+      </DashboardLayout>
     </Layout>
   );
 };

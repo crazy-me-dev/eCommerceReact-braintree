@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import Modal from "react-bootstrap/Modal";
-import Button from "react-bootstrap/Button";
-import Layout from "../core/Layout";
+import { Container, Divider, Button, Header, Icon, Modal, Table, Popup } from "semantic-ui-react";
 import moment from "moment";
+
+/**custom imports */
+import Layout from "../layout/Layout";
+import DashboardLayout from "../layout/DashboardLayout";
 import { isAuthenticated } from "../auth";
 import { getCategories, removeCategory, getCategoriesInUse } from "./apiAdmin";
+import { ButtonContainer } from "../common/components/customComponents";
 
 const ManageCategory = () => {
   const {
@@ -29,6 +32,7 @@ const ManageCategory = () => {
 
   useEffect(() => {
     load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [run]);
 
   const load = async () => {
@@ -70,80 +74,93 @@ const ManageCategory = () => {
 
   const showCategories = () => {
     let tableItems = categories.map(category => (
-      <tr key={category._id}>
-        <td>{category.name && category.name}</td>
+      <Table.Row key={category._id}>
+        <Table.Cell>{category.name && category.name}</Table.Cell>
 
-        <td>{category.createdAt && moment(category.createdAt).format("ll")}</td>
-        <td>{category.updatedAt && moment(category.updatedAt).format("ll")}</td>
-        {/* <td>{category._id && categoryHasProducts() ? "Yes" : "No"}</td> */}
-        <td align="center">{category._id && categoryHasProducts(category._id) ? "Yes" : "No"}</td>
-        <td>
-          <Link to={`/create/category/${category._id}`} className="btn btn-link">
-            Update
-          </Link>
-        </td>
-        <td>
-          <button onClick={() => handleDelete(category)} className="btn btn-link">
-            Delete
-          </button>
-        </td>
-      </tr>
+        <Table.Cell>{category.createdAt && moment(category.createdAt).format("ll")}</Table.Cell>
+        <Table.Cell>{category.updatedAt && moment(category.updatedAt).format("ll")}</Table.Cell>
+        {/* <Table.Cell>{category._id && categoryHasProducts() ? "Yes" : "No"}</Table.Cell> */}
+        <Table.Cell align="center">
+          {category._id && categoryHasProducts(category._id) ? "Yes" : "No"}
+        </Table.Cell>
+
+        <Table.Cell>
+          <Popup
+            content="Update Product"
+            position="top right"
+            trigger={
+              <Button to={`/admin/category/${category._id}`} as={Link} icon="edit" color="teal" />
+            }
+          />
+          <Popup
+            content="Delete Product"
+            position="top right"
+            trigger={<Button onClick={() => handleDelete(category)} icon="delete" color="red" />}
+          />
+        </Table.Cell>
+      </Table.Row>
     ));
     return (
-      <table className="ui stackable  celled  table mt-5">
-        <thead>
-          <tr>
-            <th>Category Name</th>
-            <th>Created</th>
-            <th>Last Update</th>
-            <th>Contain Products</th>
-            <th>Update</th>
-            <th>Delete</th>
-          </tr>
-        </thead>
-        <tbody>{tableItems}</tbody>
-      </table>
+      <Table>
+        <Table.Header>
+          <Table.Row>
+            <Table.HeaderCell>Category Name</Table.HeaderCell>
+            <Table.HeaderCell>Created</Table.HeaderCell>
+            <Table.HeaderCell>Last Update</Table.HeaderCell>
+            <Table.HeaderCell>Contain Products</Table.HeaderCell>
+            <Table.HeaderCell>Actions</Table.HeaderCell>
+          </Table.Row>
+        </Table.Header>
+        <Table.Body>{tableItems}</Table.Body>
+      </Table>
     );
   };
 
-  const DeleteModal = props => {
-    return (
-      <Modal {...props} size="md" aria-labelledby="contained-modal-title-vcenter" centered>
-        <Modal.Header closeButton>
-          <Modal.Title id="contained-modal-title-vcenter">
-            {categoryHasProducts(itemToDelete._id) ? `Cannot delete` : `Delete Category`}
-          </Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <h4>{itemToDelete.name}</h4>
-          <p>
-            {categoryHasProducts(itemToDelete._id)
-              ? "This category contains products. Make sure to change products to another category before proceeding to delete"
-              : "Are you sure you want to delete this category category?"}
-          </p>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button onClick={cancelDelete}>Close</Button>
-          {!categoryHasProducts(itemToDelete._id) && (
-            <Button variant="danger" onClick={deleteCategory}>
-              Delete
-            </Button>
-          )}
-        </Modal.Footer>
-      </Modal>
-    );
-  };
+  const deleteModal = () => (
+    <Modal closeOnEscape={true} open={showModal} dimmer="blurring" size="tiny">
+      <Header
+        icon="trash alternate"
+        content={categoryHasProducts(itemToDelete._id) ? `Cannot delete` : `Delete Category`}
+      />
+      <Modal.Content>
+        <Header as="h3">{itemToDelete.name}</Header>
+        <p>
+          {" "}
+          {categoryHasProducts(itemToDelete._id)
+            ? "This category contains products. Make sure to change products to another category before proceeding to delete"
+            : "Are you sure you want to delete this category category?"}{" "}
+        </p>
+      </Modal.Content>
+      <Modal.Actions>
+        <Button onClick={cancelDelete} color="red">
+          <Icon name="remove" /> No
+        </Button>
+        {!categoryHasProducts(itemToDelete._id) && (
+          <Button onClick={deleteCategory} color="green">
+            <Icon name="checkmark" /> Yes
+          </Button>
+        )}
+      </Modal.Actions>
+    </Modal>
+  );
 
   return (
-    <Layout title="Add category" description={`category management`} className="container">
-      <Link to="/create/category" className="btn btn-primary mb-3 mr-3">
-        Create a category
-      </Link>
-      <Link to="/admin/dashboard" className="btn btn-warning mb-3 ">
-        Back to Dashboard
-      </Link>
-      {showCategories()}
-      <DeleteModal show={showModal} onHide={() => setShowModal(false)} />
+    <Layout isDashboard={true}>
+      <DashboardLayout>
+        <Container fluid style={{ marginTop: "2rem" }}>
+          <Header as="h1">Category Management</Header>
+          <ButtonContainer>
+            <Button as={Link} fluid color="green" to="/admin/category/create">
+              Create Category
+            </Button>
+          </ButtonContainer>
+        </Container>
+        <Divider />
+
+        <Header as="h3">List of Categories</Header>
+        {showCategories()}
+        {deleteModal()}
+      </DashboardLayout>
     </Layout>
   );
 };

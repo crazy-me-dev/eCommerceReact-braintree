@@ -124,10 +124,12 @@ exports.list = async (req, res) => {
   let order = req.query.order ? req.query.order : "asc";
   let sortBy = req.query.sortBy ? req.query.sortBy : "_id";
   let limit = req.query.limit ? parseInt(req.query.limit) : 6;
+  let skip = req.query.skip ? parseInt(req.query.skip) : 0;
 
   let products = await Product.find()
     .select("-photo")
     .populate("category")
+    .skip(skip)
     .sort([[sortBy, order]])
     .limit(limit)
     .exec();
@@ -232,8 +234,6 @@ exports.photo = (req, res, next) => {
 };
 
 exports.updateQuantity = async (req, res, next) => {
-  console.log(req.body);
-
   let bulkOps = req.body.products.map(item => {
     return {
       updateOne: {

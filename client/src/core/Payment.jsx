@@ -1,17 +1,42 @@
 import React, { useState, useEffect } from "react";
 import { Redirect, Link } from "react-router-dom";
-import PaymentCard from "./PaymentCard";
-import Layout from "./Layout";
+import DropIn from "braintree-web-drop-in-react";
+import styled from "styled-components";
+
+import {
+  Grid,
+  Header,
+  Container,
+  GridColumn,
+  Message,
+  Button,
+  Table,
+  Card,
+  Icon,
+  Modal
+} from "semantic-ui-react";
+
+/**Custom imports */
+import CheckoutCard from "./CheckoutCard";
+import Layout from "../layout/Layout";
 import { getCartItems, emptyCart, getAddress } from "./cartHelper";
 import { isAuthenticated } from "../auth";
 import { getBraintreeClientToken, processPayment, createOrder } from "./apiCore";
-import DropIn from "braintree-web-drop-in-react";
-import Modal from "react-bootstrap/Modal";
-import Button from "react-bootstrap/Button";
-import Container from "react-bootstrap/Container";
-import Card from "react-bootstrap/Card";
-import { termsOfService } from "./staticContent";
-import { ReactComponent as LogoSuccess } from "../images/svgs/checked.svg";
+
+import { termsOfService } from "../common/staticContent";
+import { ButtonLink } from "../common/components/customComponents";
+
+/**
+ * Styling elements with styled-components
+ * Semantic UI modified elements' name will end with 'UI'
+ */
+
+const Title = styled.p`
+  padding-top: 1rem;
+  font-size: 1.4rem;
+`;
+
+
 
 const Checkout = props => {
   const [items, setItems] = useState([]);
@@ -44,6 +69,7 @@ const Checkout = props => {
     }
     setItems(cartItems);
     getToken(userId, token);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const isAddressRequired = items => {
@@ -67,7 +93,9 @@ const Checkout = props => {
   };
 
   const showCartItems = () => {
-    return items.map(product => <PaymentCard key={product._id} product={product} />);
+    return items.map(product => (
+      <CheckoutCard key={product._id} product={product} isPayment={true} />
+    ));
   };
 
   /**
@@ -81,7 +109,6 @@ const Checkout = props => {
     }, []);
   };
 
-  //could go in cartHelper
   const calculateTotal = () => {
     if (items.length > 0) {
       const total = items.reduce((sum, item) => {
@@ -156,60 +183,68 @@ const Checkout = props => {
   };
 
   const showError = () => (
-    <div className="alert alert-danger p-3" style={{ display: data.error ? "" : "none" }}>
+    <Message size="large" color="red" style={{ display: data.error ? "" : "none" }}>
       {data.error}
-    </div>
+    </Message>
   );
 
   const showSuccess = () => (
-    <div className="container text-center mt-5">
-      <LogoSuccess className="success-payment" />
-      <h1 className="text-info mt-5 ">Thanks! Your payment was successful!</h1>
-      <Link to="shop" className="btn btn-outline-info mt-5">
-        Continue Shopping
-      </Link>
-    </div>
+    <Container textAlign="center">
+      <Header as="h1" color="teal" icon style={{ marginTop: "4rem" }}>
+        <Icon
+          size="massive"
+          name="check circle outline"
+          color="teal"
+          style={{ marginBottom: "2rem" }}
+        />
+        Thanks! Your payment was successful!
+      </Header>
+      <Header.Subheader style={{ marginTop: "2rem" }}>
+        <Button color="teal" to="shop" as={Link}>
+          Continue Shopping
+        </Button>
+      </Header.Subheader>
+    </Container>
   );
 
   const showTotalSection = () => {
     return (
-      <div className="card mt-4">
-        <div className="card-body">
-          <table className="table table-borderless">
-            <tbody>
-              <tr className=" text-nowrap">
-                <td align="left">
-                  <h5 className=" text-nowrap">Original price:</h5>
-                </td>
-                <td align="right">
-                  <h5 className="text-nowrap">AU${calculateTotalBeforeDiscount()}</h5>
-                </td>
-              </tr>
-              <tr className=" text-nowrap">
-                <td align="left">
-                  <h5 className=" text-nowrap">Coupon discounts:</h5>
-                </td>
-                <td align="right">
-                  <h5 className=" text-nowrap">-AU${calculateDiscount()}</h5>
-                </td>
-              </tr>
-              <tr>
-                <td align="left">
-                  <h5 className="font-weight-bold text-nowrap">Total:</h5>
-                </td>
-                <td align="right">
-                  {" "}
-                  <h5 className="font-weight-bold text-nowrap">AU${calculateTotal()}</h5>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+      <Card fluid style={{ marginTop: 14 }}>
+        <Card.Content>
+          <Table basic="very" unstackable>
+            <Table.Body>
+              <Table.Row>
+                <Table.Cell textAlign="left">
+                  <Title>Original price:</Title>
+                </Table.Cell>
+                <Table.Cell textAlign="right">
+                  <Title>AU${calculateTotalBeforeDiscount()}</Title>
+                </Table.Cell>
+              </Table.Row>
+              <Table.Row>
+                <Table.Cell textAlign="left">
+                  <Title>Coupon discounts:</Title>
+                </Table.Cell>
+                <Table.Cell textAlign="right">
+                  <Title>-AU${calculateDiscount()}</Title>
+                </Table.Cell>
+              </Table.Row>
+              <Table.Row>
+                <Table.Cell textAlign="left">
+                  <Title>Total:</Title>
+                </Table.Cell>
+                <Table.Cell textAlign="right">
+                  <Title>AU${calculateTotal()}</Title>
+                </Table.Cell>
+              </Table.Row>
+            </Table.Body>
+          </Table>
 
-          <button type="button" onClick={buy} className="btn btn-danger btn-lg btn-block mt-3">
+          <Button type="button" onClick={buy} color="red" fluid>
             Complete Payment
-          </button>
-        </div>
-      </div>
+          </Button>
+        </Card.Content>
+      </Card>
     );
   };
 
@@ -229,65 +264,68 @@ const Checkout = props => {
 
   const showTerms = () => {
     return (
-      <div className="card terms text-center bg-light p-3">
+      <Message>
         <span>
           By completing your purchase you agree of these
-          <button className="btn btn-link text-info " onClick={() => setShowTermsModal(true)}>
-            Terms of service
-          </button>
+          <ButtonLink onClick={() => setShowTermsModal(true)}>Terms of service</ButtonLink>
         </span>
-      </div>
+      </Message>
     );
   };
 
   const showPaymentSection = () => (
-    <div>
-      <h3 className=" font-weight-bold">Checkout</h3>
+    <div style={{ marginTop: 14 }}>
       {showError()}
       {showDropIn()}
       {showTerms()}
-      <TermsModal show={showTermsModal} onHide={() => setShowTermsModal(false)} />
+      {termsModal()}
     </div>
   );
 
-  const TermsModal = props => {
-    return (
-      <Modal {...props} size="lg" aria-labelledby="contained-modal-title-vcenter" centered>
-        <Modal.Header closeButton>
-          <Modal.Title id="contained-modal-title-vcenter">Terms of Service</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Container
-            className=" mt-3 text-justify pr-5 pl-5"
-            style={{ whiteSpace: "pre-wrap", lineHeight: 1.5 }}
-          >
-            {termsOfService}
-          </Container>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button onClick={() => setShowTermsModal(false)}>Got it!</Button>
-        </Modal.Footer>
-      </Modal>
-    );
-  };
+  const termsModal = () => (
+    <Modal closeOnEscape={true} open={showTermsModal} dimmer="blurring" size="large">
+      <Header content="Terms or Service" />
+      <Modal.Content scrolling>
+        <Container
+          textAlign="justified"
+          style={{ whiteSpace: "pre-wrap", lineHeight: 1.8, padding: "2rem", fontSize: "1.4rem" }}
+        >
+          {termsOfService}
+        </Container>
+      </Modal.Content>
+      <Modal.Actions>
+        <Button onClick={() => setShowTermsModal(false)} color="green">
+          <Icon name="checkmark" /> Got it!
+        </Button>
+      </Modal.Actions>
+    </Modal>
+  );
 
   return (
-    <Layout title="Checkout" description="All payments are 100% secure" className="container">
+    <Layout title="Checkout" description="All payments are 100% secure">
       {shouldRedirect()}
-      <div className="row">
+      <Container>
         {data && data.success ? (
           showSuccess()
         ) : (
-          <>
-            <div className="col-xl-8 col-lg-7 mb-5">{showPaymentSection()}</div>
-            <div className="col-xl-4 col-lg-5 mb-5">{showTotalSection()}</div>
-            <div className="col-xl-8 col-lg-7">
-              <h3 className="mb-5 font-weight-bold">Order summary</h3>
-              {showCartItems()}
-            </div>{" "}
-          </>
+          <Grid centered>
+            <Grid.Row>
+              <Grid.Column mobile={16} tablet={14} computer={11}>
+                {showPaymentSection()}
+              </Grid.Column>
+              <Grid.Column mobile={16} tablet={14} computer={5}>
+                {showTotalSection()}
+              </Grid.Column>
+            </Grid.Row>
+            <Grid.Row>
+              <Grid.Column mobile={16} tablet={14} computer={11}>
+                <Header>Order Summary</Header> {showCartItems()}
+              </Grid.Column>
+              <GridColumn computer={5} />
+            </Grid.Row>
+          </Grid>
         )}
-      </div>
+      </Container>
     </Layout>
   );
 };

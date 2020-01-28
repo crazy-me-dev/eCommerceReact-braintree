@@ -10,8 +10,7 @@ import Signup from "./user/Signup";
 import Home from "./core/Home";
 import Shop from "./core/Shop";
 import Product from "./core/Product";
-import UserDashboard from "./user/UserDashboard";
-import AdminDashboard from "./user/AdminDashboard";
+import Dashboard from "./user/Dashboard";
 import Profile from "./user/Profile";
 import AddCategory from "./admin/AddCategory";
 import AddProduct from "./admin/AddProduct";
@@ -30,18 +29,19 @@ const Routes = () => {
           <Route path="/shop" exact component={Shop} />
           <Route path="/signin" exact component={Signin} />
           <Route path="/signup" exact component={Signup} />
-          <PrivateRoute path="/user/dashboard" exact component={UserDashboard} />
+          <PrivateRoute path="/user/dashboard" exact component={Dashboard} />
           <PrivateRoute path="/profile/:userId" exact component={Profile} />
           <PrivateRoute path="/user/history/:orderId" exact component={OrderDetail} />
-          <AdminRoute path="/admin/dashboard" exact component={AdminDashboard} />
+
+          <AdminRoute path="/admin/dashboard" exact component={Dashboard} />
 
           <AdminRoute path="/admin/product" exact component={ManageProduct} />
-          <AdminRoute path="/create/product" exact component={AddProduct} />
-          <AdminRoute path="/create/product/:productId" exact component={AddProduct} />
+          <AdminRoute path="/admin/product/create" exact component={AddProduct} />
+          <AdminRoute path="/admin/product/:productId" exact component={AddProduct} />
 
           <AdminRoute path="/admin/category" exact component={ManageCategory} />
-          <AdminRoute path="/create/category" exact component={AddCategory} />
-          <AdminRoute path="/create/category/:categoryId" exact component={AddCategory} />
+          <AdminRoute path="/admin/category/create" exact component={AddCategory} />
+          <AdminRoute path="/admin/category/:categoryId" exact component={AddCategory} />
 
           <AdminRoute path="/admin/order" exact component={ManageOrder} />
           <AdminRoute path="/admin/order/:orderId" exact component={OrderDetail} />

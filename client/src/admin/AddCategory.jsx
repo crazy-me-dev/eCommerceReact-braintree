@@ -1,31 +1,36 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, Redirect } from "react-router-dom";
+import {
+  Container,
+  Divider,
+  Header,
+  Segment,
+  Form,
+  Button,
+  Message,
+  Input,
+  Grid
+} from "semantic-ui-react";
 
-import Layout from "../core/Layout";
-
+//custom imports
+import Layout from "../layout/Layout";
+import DashboardLayout from "../layout/DashboardLayout";
 import { isAuthenticated } from "../auth";
 import { createCategory, getCategory, updateCategory } from "../admin/apiAdmin";
-
-const useFocus = () => {
-  const htmlElRef = useRef(null);
-  const setFocus = () => {
-    htmlElRef.current && htmlElRef.current.focus();
-  };
-
-  return [htmlElRef, setFocus];
-};
+import { ButtonContainer, LabelCustom } from "../common/components/customComponents";
+import useFocus from "../common/hooks/useFocus";
 
 const AddCategory = props => {
+  const [inputRef, setInputFocus] = useFocus();
   const [name, setName] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
-  const [inputRef, setInputFocus] = useFocus();
   const [category, setCategory] = useState({});
   const [isUpdating, setIsUpdating] = useState(false);
   const [redirect, setRedirect] = useState(false);
 
   const {
-    user: { _id: userId, name: userName },
+    user: { _id: userId },
     token
   } = isAuthenticated();
 
@@ -80,69 +85,78 @@ const AddCategory = props => {
     if (redirect) return <Redirect to="/admin/category"></Redirect>;
   };
 
+  const goBack = () => (
+    <ButtonContainer>
+      <Button
+        fluid
+        as={Link}
+        to="/admin/category"
+        color="red"
+        icon="left arrow"
+        labelPosition="right"
+        style={{ marginBottom: "1rem" }}
+        content="Back to Dashboard"
+      />
+    </ButtonContainer>
+  );
+
   const showSuccess = () => (
-    <div className="alert alert-info" style={{ display: success ? "" : "none" }}>
+    <Message color="green" style={{ display: success ? "" : "none", fontSize: "1.3rem" }}>
       New Category has been created.
-    </div>
+    </Message>
   );
 
   const showError = () => (
-    <div className="alert alert-danger" style={{ display: error ? "" : "none" }}>
+    <Message color="red" style={{ display: error ? "" : "none", fontSize: "1.3rem" }}>
       Category {error}
-    </div>
-  );
-  const goBack = () => (
-    <div className=" mt-5">
-      <Link to="/admin/category" className="text-warning">
-        Back to Dashboard &larr;
-      </Link>
-    </div>
+    </Message>
   );
 
   const newCategoryForm = () => {
     return (
-      <div className="card">
-        <article className=" bg-light">
-          <h4 className="card-title mt-3 text-center">{isUpdating ? "Update" : "Add"}</h4>
-          <form className="card-body mx-auto">
-            <div className="form-group input-group">
-              <input
-                name="name"
-                type="text"
-                placeholder="Enter Name"
-                className="form-control"
-                autoFocus
-                value={name}
-                onChange={handleChange}
-                ref={inputRef}
-              />
-              <div className="input-group-append">
-                <button
-                  type="submit"
-                  className="btn btn-outline-primary float-right"
-                  onClick={handleSubmit}
-                >
+      <Form size="large" onSubmit={handleSubmit}>
+        {shouldRedirect()}
+        <Segment stacked>
+          <LabelCustom>Name</LabelCustom>
+          <Grid>
+            <Grid.Row>
+              <Grid.Column mobile={16} tablet={10} computer={12}>
+                <Input
+                  style={{ marginTop: "1rem" }}
+                  fluid
+                  placeholder="Product name"
+                  name="name"
+                  value={name}
+                  onChange={handleChange}
+                  ref={inputRef}
+                  autoFocus
+                />
+              </Grid.Column>
+              <Grid.Column mobile={16} tablet={6} computer={4}>
+                <Button style={{ marginTop: "1rem" }} fluid color="blue" type="submit">
                   {isUpdating ? "Update" : "Create"}
-                </button>
-              </div>
-            </div>
-            {goBack()}
-          </form>
-        </article>
-      </div>
+                </Button>
+              </Grid.Column>
+            </Grid.Row>
+          </Grid>
+        </Segment>
+      </Form>
     );
   };
 
   return (
-    <Layout title="Category Form" description={`G'day ${userName}`} className="container">
-      <div className="row">
-        {shouldRedirect()}
-        <div className="col-md-8 offset-md-2">
+    <Layout isDashboard={true}>
+      <DashboardLayout>
+        <Container fluid style={{ marginTop: "2rem" }}>
+          {shouldRedirect()}
+          <Header as="h1">Create Category</Header>
+          <Divider />
+          {goBack()}
           {showError()}
           {showSuccess()}
           {newCategoryForm()}
-        </div>
-      </div>
+        </Container>
+      </DashboardLayout>
     </Layout>
   );
 };
