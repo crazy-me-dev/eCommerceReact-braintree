@@ -22,6 +22,7 @@ import Layout from "../layout/Layout";
 import { getCartItems, emptyCart, getAddress } from "./cartHelper";
 import { isAuthenticated } from "../auth";
 import { getBraintreeClientToken, processPayment, createOrder } from "./apiCore";
+
 import { termsOfService } from "../common/staticContent";
 import { ButtonLink } from "../common/components/customComponents";
 
@@ -34,6 +35,8 @@ const Title = styled.p`
   padding-top: 1rem;
   font-size: 1.4rem;
 `;
+
+
 
 const Checkout = props => {
   const [items, setItems] = useState([]);
