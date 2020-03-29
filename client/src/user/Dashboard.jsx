@@ -5,9 +5,9 @@ import { Container, Divider, Button, Grid, Header, Table, Icon } from "semantic-
 import moment from "moment";
 
 /**custom imports */
+import { useSelector } from "react-redux";
 import Layout from "../layout/Layout";
 import DashboardLayout from "../layout/DashboardLayout";
-import { isAuthenticated } from "../auth";
 import { getHistory } from "./apiUser";
 import { ButtonContainer } from "../common/components/customComponents";
 
@@ -23,11 +23,11 @@ const Title = styled.p`
 `;
 
 const Dashboard = () => {
-  const {
-    user: { _id: userId, role, name, address, email },
-    token
-  } = isAuthenticated();
+  const { user, token } = useSelector(state => ({
+    ...state.authReducer
+  }));
 
+  const { _id: userId, role, name, address, email } = user ? user : null;
   const [values, setValues] = useState({
     history: [],
     error: false,

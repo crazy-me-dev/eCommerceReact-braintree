@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import { Container, Divider, Button, Header, Icon, Modal, Table, Popup } from "semantic-ui-react";
 import moment from "moment";
@@ -6,15 +7,15 @@ import moment from "moment";
 /**custom imports */
 import Layout from "../layout/Layout";
 import DashboardLayout from "../layout/DashboardLayout";
-import { isAuthenticated } from "../auth";
 import { getCategories, removeCategory, getCategoriesInUse } from "./apiAdmin";
 import { ButtonContainer } from "../common/components/customComponents";
 
 const ManageCategory = () => {
-  const {
-    user: { _id: userId },
-    token
-  } = isAuthenticated();
+  const { user, token } = useSelector(state => ({
+    ...state.authReducer
+  }));
+
+  const { _id: userId } = user ? user : null;
 
   const [limit, setLimit] = useState(20);
   const [showModal, setShowModal] = useState(false);

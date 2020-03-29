@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
 import { Redirect, Link } from "react-router-dom";
 import DropIn from "braintree-web-drop-in-react";
 import styled from "styled-components";
@@ -17,10 +18,9 @@ import {
 } from "semantic-ui-react";
 
 /**Custom imports */
+import { EMPTY_CART } from "../store/actions/cartAction";
 import CheckoutCard from "./CheckoutCard";
 import Layout from "../layout/Layout";
-import { getCartItems, emptyCart, getAddress } from "./cartHelper";
-import { isAuthenticated } from "../auth";
 import { getBraintreeClientToken, processPayment, createOrder } from "./apiCore";
 import { termsOfService } from "../common/staticContent";
 import { ButtonLink } from "../common/components/customComponents";
@@ -36,7 +36,13 @@ const Title = styled.p`
 `;
 
 const Checkout = props => {
-  const [items, setItems] = useState([]);
+  const dispatch = useDispatch();
+
+  const { user, token, address: storedAddress, cart: items } = useSelector(state => ({
+    ...state.authReducer,
+    ...state.cartReducer
+  }));
+  const userId = user && user._id ? user._id : null;
   const [showTermsModal, setShowTermsModal] = useState(false);
   const [redirect, setRedirect] = useState(false);
 
@@ -49,23 +55,18 @@ const Checkout = props => {
     address: ""
   });
 
-  const {
-    user: { _id: userId },
-    token
-  } = isAuthenticated();
-
   useEffect(() => {
-    let cartItems = getCartItems();
-    if (cartItems && cartItems.length <= 0) {
+    if (items && items.length <= 0) {
       setRedirect(true);
     }
 
-    if (!getAddress() && isAddressRequired(cartItems)) {
+    if (!storedAddress && isAddressRequired(items)) {
       props.history.push("/cart");
       setRedirect(true);
     }
-    setItems(cartItems);
-    getToken(userId, token);
+
+    //gets the Braintree token
+    getBraintreeToken(userId, token);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -80,7 +81,7 @@ const Checkout = props => {
     if (redirect) return <Redirect to="/cart"></Redirect>;
   };
 
-  const getToken = async (userId, token) => {
+  const getBraintreeToken = async (userId, token) => {
     const brainTreeToken = await getBraintreeClientToken(userId, token);
     if (brainTreeToken.error) {
       setData({ ...data, error: brainTreeToken.error });
@@ -143,9 +144,9 @@ const Checkout = props => {
         } else if (res.transaction.paypal.authorizationId) {
           paymentType = "paypal";
         }
-        let savedAddress = getAddress();
-        if (savedAddress) {
-          var { _id, ...address } = savedAddress;
+
+        if (storedAddress) {
+          var { _id, ...address } = storedAddress;
           address = buildAddress(address);
         } else address = null;
 
@@ -162,7 +163,9 @@ const Checkout = props => {
           setData({ ...data, error: order.error });
         } else {
           setData({ ...data, success: res.success });
-          emptyCart(setData({ ...data, success: res.success }));
+          dispatch({
+            type: EMPTY_CART
+          });
         }
       }
     } catch (e) {

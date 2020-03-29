@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import queryString from "query-string";
 import {
@@ -16,16 +17,16 @@ import {
 /** custom imports */
 import Layout from "../layout/Layout";
 import DashboardLayout from "../layout/DashboardLayout";
-import { isAuthenticated } from "../auth";
 import { getProducts, removeProduct } from "./apiAdmin";
 import Search from "../core/Search";
 
 const ManageProduct = props => {
   /** get the userId and token to make request as admin */
-  const {
-    user: { _id: userId },
-    token
-  } = isAuthenticated();
+  const { user, token } = useSelector(state => ({
+    ...state.authReducer
+  }));
+
+  const { _id: userId } = user ? user : null;
 
   /**state declaration */
   const [toggleSearch, setToggleSearch] = useState(true);

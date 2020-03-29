@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useDispatch } from "react-redux";
 import { Redirect, Link } from "react-router-dom";
 import styled from "styled-components";
 import moment from "moment";
@@ -8,9 +9,19 @@ import { useLastLocation } from "react-router-last-location";
 import Layout from "../layout/Layout";
 import MainCard from "./MainCard";
 import { getProduct, getRelatedProducts } from "./apiCore";
-import { Container, Message, Grid, Header, Card, Image, Button, Label } from "semantic-ui-react";
+import {
+  Container,
+  Message,
+  Grid,
+  Header,
+  Card,
+  Image,
+  Button,
+  Label,
+  Popup
+} from "semantic-ui-react";
 import noImage from "../images/No_Image_Available.jpg";
-import { addItem } from "./cartHelper";
+import { ADD_TO_CART } from "../store/actions/cartAction";
 
 /**
  * Styling elements with styled-components
@@ -30,6 +41,7 @@ const Title = styled.p`
 `;
 
 const Product = props => {
+  const dispatch = useDispatch();
   const lastLocation = useLastLocation();
   const [product, setProduct] = useState({});
   const [relatedProducts, setRelatedProducts] = useState([]);
@@ -68,7 +80,10 @@ const Product = props => {
 
   const addToCart = () => {
     const productForCart = { _id, name, price, category, hasPhoto, shipping, quantity };
-    addItem(productForCart, setRedirect(true));
+    dispatch({
+      type: ADD_TO_CART,
+      payload: productForCart
+    });
   };
 
   /** This function formats the decimal part to be smaller and above  */
@@ -82,6 +97,24 @@ const Product = props => {
         <sup style={{ fontSize: 15 }}>{decimalPart}</sup>
       </span>
     );
+  };
+
+  const timeoutLength = 1500;
+  let timeout;
+  const [isOpen, setIsOpen] = useState(false);
+  const handleOpen = () => {
+    setTimeout(() => {
+      setIsOpen(true);
+    }, 100);
+
+    timeout = setTimeout(() => {
+      setIsOpen(false);
+    }, timeoutLength);
+  };
+
+  const handleClose = () => {
+    setIsOpen(false);
+    clearTimeout(timeout);
   };
 
   const shouldRedirect = () => {
@@ -158,16 +191,27 @@ const Product = props => {
                 widescreen={3}
                 style={{ marginTop: ".5rem" }}
               >
-                <Button
-                  fluid
-                  size="large"
-                  color="green"
-                  type="button"
-                  icon="shop"
-                  labelPosition="right"
-                  onClick={addToCart}
-                  content="Add to Cart"
-                  disabled={quantity < 1 ? true : false}
+                <Popup
+                  content="Added to cart"
+                  position="top right"
+                  on="click"
+                  open={isOpen}
+                  onClose={handleClose}
+                  onOpen={handleOpen}
+                  inverted
+                  trigger={
+                    <Button
+                      fluid
+                      size="large"
+                      color="green"
+                      type="button"
+                      icon="shop"
+                      labelPosition="right"
+                      onClick={addToCart}
+                      content="Add to Cart"
+                      disabled={quantity < 1 ? true : false}
+                    />
+                  }
                 />
               </Grid.Column>
 

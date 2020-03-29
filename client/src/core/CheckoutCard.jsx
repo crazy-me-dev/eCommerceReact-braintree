@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
+import { useDispatch } from "react-redux";
 import { Link } from "react-router-dom";
 import styled from "styled-components";
 import { Button, Card, Image, Grid, Header, Input } from "semantic-ui-react";
 
 /**custom imports */
+import { UPDATE_CART_ITEM, DELETE_CART_ITEM } from "../store/actions/cartAction";
 import noImage from "../images/No_Image_Available.jpg";
-import { updateItem, removeItem } from "./cartHelper";
+
 import { mediaUI as media } from "../utils/mediaQueriesBuilder";
 
 /**
@@ -35,7 +37,8 @@ const ImageUI = styled(Image)`
   ${media.tablet`visibility: visible;`}
 `;
 
-const CheckoutCard = ({ product, setRun = f => f, run = undefined, isPayment = false }) => {
+const CheckoutCard = ({ product, isPayment = false }) => {
+  const dispatch = useDispatch();
   const { _id, name, price, hasPhoto, count: initialCount, quantity } = product;
 
   const [subtotal, setSubtotal] = useState(0);
@@ -76,16 +79,30 @@ const CheckoutCard = ({ product, setRun = f => f, run = undefined, isPayment = f
       //Double checking we got an int value
       else countValue = parseInt(value);
       setCount(countValue);
-      updateItem(_id, countValue);
+      // updateItem(_id, countValue);
+      dispatch({
+        type: UPDATE_CART_ITEM,
+        payload: {
+          count: countValue,
+          productId: _id
+        }
+      });
+
       //setRun will make the total section in ShoppingCart to update
-      setRun(!run);
+      // setRun(!run);
     }
   };
 
   const remove = () => {
-    removeItem(_id);
+    // removeItem(_id);
+    dispatch({
+      type: DELETE_CART_ITEM,
+      payload: {
+        productId: _id
+      }
+    });
     //setRun will make the total section in ShoppingCart to update
-    setRun(!run);
+    // setRun(!run);
   };
 
   return (

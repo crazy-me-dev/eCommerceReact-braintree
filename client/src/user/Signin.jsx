@@ -1,12 +1,13 @@
-import React, { useState } from "react";
+import React, { useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
 import { Button, Form, Grid, Header, Icon, Message, Segment } from "semantic-ui-react";
 import { Link, Redirect } from "react-router-dom";
 import { useLastLocation } from "react-router-last-location";
 
 /**custom imports */
+import { SIGNIN, RESET_FLAGS } from "../store/actions/authAction";
 import useForm from "../common/hooks/useForm";
 import { validateSignin } from "../common/validation/validate";
-import { signin, authenticate, isAuthenticated } from "../auth";
 import Layout from "../layout/Layout";
 
 const initialState = {
@@ -15,47 +16,55 @@ const initialState = {
 };
 
 const Signin = () => {
+  const dispatch = useDispatch();
+
+  const { error, success, user } = useSelector(state => ({
+    ...state.authReducer
+  }));
+
   const { handleChange, handleSubmit, values, errors } = useForm(
     submit,
     initialState,
     validateSignin
   );
 
-  const [error, setError] = useState(false);
-  const [loading, setloading] = useState(false);
-  const [redirectToReferral, setRedirectToReferral] = useState(false);
   /**store the last location before rendering this page.
    * It is used to know which page invoked this route so we can redirect to it if necessary
    */
   const lastLocation = useLastLocation();
-  const { user } = isAuthenticated();
+
   const { email, password } = values;
 
   //function declaration
   async function submit() {
-    setError(false);
-    setloading(true);
-    const data = await signin({ email, password });
-    if (data.error) {
-      setError(data.error);
-      setloading(false);
-    } else {
-      authenticate(data, () => {
-        setRedirectToReferral(true);
-      });
-    }
+    dispatch({
+      type: SIGNIN,
+      payload: values
+    });
   }
 
-  const showLoading = () =>
-    loading && (
-      <Message
-        size="tiny"
-        color="blue"
-        style={{ display: error ? "" : "none", fontSize: "1.3rem" }}
-      >
-        Loading...
-      </Message>
-    );
+  const resetFlags = () => {
+    dispatch({
+      type: RESET_FLAGS
+    });
+  };
+
+  useEffect(() => {
+    return () => {
+      resetFlags();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const showLoading = () => (
+    <Message
+      size="tiny"
+      color="blue"
+      style={{ display: success ? "" : "none", fontSize: "1.3rem" }}
+    >
+      Loading...
+    </Message>
+  );
   const showError = () => (
     <Message color="red" style={{ display: error ? "" : "none", fontSize: "1.3rem" }}>
       {error}
@@ -63,7 +72,7 @@ const Signin = () => {
   );
 
   const redirectUser = () => {
-    if (redirectToReferral) {
+    if (success && user) {
       if (lastLocation && lastLocation.pathname === "/cart") {
         return <Redirect to="/cart" />;
       }
@@ -83,7 +92,7 @@ const Signin = () => {
           <Header as="h2" color="teal" textAlign="center">
             <Icon name="unlock alternate" size="large" color="teal" /> Sign-in to your account
           </Header>
-          <Form size="large" onSubmit={handleSubmit} onChange={() => setError(false)}>
+          <Form size="large" onSubmit={handleSubmit} onChange={resetFlags}>
             {showError()}
             {showLoading()}
             <Segment stacked>

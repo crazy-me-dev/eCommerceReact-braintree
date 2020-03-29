@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
 import { Link } from "react-router-dom";
 import { Button, Form, Grid, Header, Icon, Message, Segment } from "semantic-ui-react";
-
 import Layout from "../layout/Layout";
-import { signup } from "../auth";
+
+import { SIGNUP, RESET_FLAGS } from "../store/actions/authAction";
 import useForm from "../common/hooks/useForm";
 import { validateSignup } from "../common/validation/validate";
 
@@ -14,7 +15,12 @@ const initialState = {
 };
 
 const Signup = () => {
-  const { handleChange, handleSubmit, setValues, values, errors } = useForm(
+  const dispatch = useDispatch();
+  let { error, success } = useSelector(state => ({
+    ...state.authReducer
+  }));
+
+  const { handleChange, handleSubmit, values, errors } = useForm(
     submit,
     initialState,
     validateSignup
@@ -22,25 +28,24 @@ const Signup = () => {
 
   const { name, email, password } = values;
 
-  const [success, setSuccess] = useState(false);
-  const [error, setError] = useState(false);
-
   //function declaration
   async function submit() {
-    setError(false);
-    const data = await signup({ name, email, password });
-    if (data.error) {
-      setError(data.error);
-      setSuccess(false);
-    } else {
-      setSuccess(true);
-      setValues(initialState);
-    }
+    dispatch({
+      type: SIGNUP,
+      payload: values
+    });
   }
+
+  useEffect(() => {
+    return () => {
+      resetFlags();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const showSuccess = () => (
     <Message color="blue" style={{ display: success ? "" : "none", fontSize: "1.3rem" }}>
-      New Account has been created. Please <Link to="signin">Sign in</Link>
+      New Account has been created. <Link to="signin">Sign in here</Link>
     </Message>
   );
   const showError = () => (
@@ -49,6 +54,12 @@ const Signup = () => {
     </Message>
   );
 
+  const resetFlags = () => {
+    dispatch({
+      type: RESET_FLAGS
+    });
+  };
+
   const signupForm = () => {
     return (
       <Grid textAlign="center" style={{ height: "100vh", marginTop: "2rem" }}>
@@ -56,7 +67,7 @@ const Signup = () => {
           <Header as="h2" color="teal" textAlign="center">
             <Icon name="unlock alternate" size="large" color="teal" /> Sign-up to your account
           </Header>
-          <Form size="large" onSubmit={handleSubmit} onChange={() => setError(false)}>
+          <Form size="large" onSubmit={handleSubmit} onChange={resetFlags}>
             {showError()}
             {showSuccess()}
             <Segment stacked>
@@ -94,7 +105,7 @@ const Signup = () => {
               />
 
               <Button color="teal" fluid size="large" type="submit">
-                Login
+                Sign Up
               </Button>
             </Segment>
           </Form>

@@ -1,4 +1,5 @@
 import React from "react";
+import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import styled from "styled-components";
 import { List } from "semantic-ui-react";
@@ -6,7 +7,6 @@ import { List } from "semantic-ui-react";
 /**custom imports */
 import { colorPrimaryLight2 } from "../utils/variables";
 import { mediaUI as media } from "../utils/mediaQueriesBuilder";
-import { isAuthenticated } from "../auth";
 
 /**
  * Styling elements with styled-components
@@ -86,7 +86,9 @@ const ListItemUI = styled(List.Item)`
 `;
 
 const Sidebar = () => {
-  const { user } = isAuthenticated();
+  const { user } = useSelector(state => ({
+    ...state.authReducer
+  }));
   return (
     <ListUI divided>
       <ListItemUI

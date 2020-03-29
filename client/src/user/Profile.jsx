@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useSelector, useDispatch } from "react-redux";
 import { Link } from "react-router-dom";
 import styled from "styled-components";
 import Layout from "../layout/Layout";
@@ -13,8 +14,9 @@ import {
   Divider,
   Checkbox
 } from "semantic-ui-react";
-import { isAuthenticated } from "../auth";
-import { getUser, updateUser, updateUserLocalStorage } from "./apiUser";
+
+/**custom imports */
+import { UPDATE_USER, RESET_FLAGS } from "../store/actions/authAction";
 import DashboardLayout from "../layout/DashboardLayout";
 import { mediaUI as media } from "../utils/mediaQueriesBuilder";
 import useForm from "../common/hooks/useForm";
@@ -57,48 +59,54 @@ const Profile = props => {
     initialState,
     validateUpdateProfile
   );
+  const dispatch = useDispatch();
+  const { user, token, success, error, address: storedAddress } = useSelector(state => ({
+    ...state.authReducer
+  }));
 
-  const {
-    user: { _id: userId, role },
-    token
-  } = isAuthenticated();
+  const { _id: userId, email: userEmail, name: userName, role } = user ? user : null;
 
-  const [error, setError] = useState(false);
-  const [success, setSuccess] = useState(false);
   const [updatePassword, setUpdatePassword] = useState(false);
+  const { name, password, street, city, zip, country, state } = values;
 
-  const { name, email, password, street, city, zip, country, state } = values;
-
-  const load = async () => {
-    const user = await getUser(props.match.params.userId, token);
-    if (user.error) {
-      setError(user.error);
-    } else {
-      let { _id, address, ...userDetails } = user;
-      setValues({ ...values, ...userDetails, ...user.address });
-    }
-  };
   useEffect(() => {
-    load();
+    if (userId !== props.match.params.userId) props.history.push("/home");
+    else {
+      if (storedAddress) {
+        var { _id: addressId, ...address } = storedAddress;
+        setValues({ ...values, email: userEmail, name: userName, ...address });
+      } else setValues({ ...values, email: userEmail, name: userName });
+    }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  useEffect(() => {
+    return () => {
+      resetFlags();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const resetFlags = () => {
+    dispatch({
+      type: RESET_FLAGS
+    });
+  };
+
   async function submit() {
-    setError(false);
     let { email, name, password, ...updatedAddress } = values;
     let updatedUser;
     if (password) updatedUser = { name, password, address: updatedAddress };
     else updatedUser = { name, address: updatedAddress };
 
-    const data = await updateUser(userId, token, updatedUser);
-    if (data.error) {
-      setError(data.error);
-      setSuccess(false);
-    } else {
-      updateUserLocalStorage(data, () => {
-        setSuccess(true);
-      });
-    }
+    dispatch({
+      type: UPDATE_USER,
+      payload: {
+        user: updatedUser,
+        userId,
+        token
+      }
+    });
   }
 
   const showSuccess = () => (
@@ -116,7 +124,6 @@ const Profile = props => {
   const toggle = (e, { checked }) => {
     if (!checked) {
       setValues({ ...values, password: "" });
-      setError(false);
     }
     setUpdatePassword(!updatePassword);
   };
@@ -138,7 +145,7 @@ const Profile = props => {
 
   const profileForm = () => {
     return (
-      <Form size="large" onSubmit={handleSubmit} onChange={() => setError(false)}>
+      <Form size="large" onSubmit={handleSubmit} onChange={resetFlags}>
         <Segment stacked>
           {showError()}
           {showSuccess()}
@@ -272,7 +279,7 @@ const Profile = props => {
       <DashboardLayout>
         <Container fluid style={{ marginTop: "2rem" }}>
           <Header as="h1">Updating details</Header>
-          <Header as="h2">User: {email}</Header>
+          <Header as="h2"></Header>
           <Divider style={{ marginBottom: "2rem" }} />
           {goBack()}
           {profileForm()}

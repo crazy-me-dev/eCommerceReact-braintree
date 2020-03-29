@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
 import moment from "moment";
 import { Link } from "react-router-dom";
 import { Container, Divider, Header, Table, Select } from "semantic-ui-react";
@@ -6,15 +7,14 @@ import { Container, Divider, Header, Table, Select } from "semantic-ui-react";
 /**custom imports */
 import Layout from "../layout/Layout";
 import DashboardLayout from "../layout/DashboardLayout";
-import { isAuthenticated } from "../auth";
+
 import { getOrders, getStatusValues, updateStatusValues } from "./apiAdmin";
 
 const ManageOrder = () => {
-  const {
-    user: { _id: userId },
-    token
-  } = isAuthenticated();
-
+  const { user, token } = useSelector(state => ({
+    ...state.authReducer
+  }));
+  const { _id: userId } = user ? user : null;
   const [statusValues, setStatusValues] = useState([]);
   const [values, setValues] = useState({
     orderList: [],

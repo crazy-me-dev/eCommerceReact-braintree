@@ -1,11 +1,13 @@
 import React, { useState } from "react";
+import { useDispatch } from "react-redux";
 import { Link, Redirect } from "react-router-dom";
 import styled from "styled-components";
 import moment from "moment";
-import { Card, Icon, Button, Image, Header } from "semantic-ui-react";
+import { Card, Icon, Button, Image, Header, Popup } from "semantic-ui-react";
 
 //custom imports
-import { addItem } from "./cartHelper";
+
+import { ADD_TO_CART } from "../store/actions/cartAction";
 import noImage from "../images/No_Image_Available.jpg";
 import { mediaUI as media } from "../utils/mediaQueriesBuilder";
 
@@ -30,13 +32,34 @@ const CardUI = styled(Card)`
 `;
 
 const MainCard = ({ product, history }) => {
+  const dispatch = useDispatch();
   const [redirect, setRedirect] = useState(false);
-
+  const [isOpen, setIsOpen] = useState(false);
   const { _id, name, price, hasPhoto, category, createdAt, shipping, quantity } = product;
 
   const addToCart = () => {
     const productForCart = { _id, name, price, category, hasPhoto, shipping, quantity };
-    addItem(productForCart, setRedirect(true));
+    dispatch({
+      type: ADD_TO_CART,
+      payload: productForCart
+    });
+  };
+
+  const timeoutLength = 1500;
+  let timeout;
+  const handleOpen = () => {
+    setTimeout(() => {
+      setIsOpen(true);
+    }, 100);
+
+    timeout = setTimeout(() => {
+      setIsOpen(false);
+    }, timeoutLength);
+  };
+
+  const handleClose = () => {
+    setIsOpen(false);
+    clearTimeout(timeout);
   };
 
   const shouldRedirect = () => {
@@ -54,18 +77,29 @@ const MainCard = ({ product, history }) => {
         </Button>
       </Link>
 
-      <Button
-        color="green"
-        animated="vertical"
-        type="button"
-        onClick={addToCart}
-        disabled={quantity < 1 ? true : false}
-      >
-        <Button.Content hidden>Cart</Button.Content>
-        <Button.Content visible>
-          <Icon name="shop" />
-        </Button.Content>
-      </Button>
+      <Popup
+        content="Added to cart"
+        position="top right"
+        on="click"
+        open={isOpen}
+        onClose={handleClose}
+        onOpen={handleOpen}
+        inverted
+        trigger={
+          <Button
+            color="green"
+            animated="vertical"
+            type="button"
+            onClick={addToCart}
+            disabled={quantity < 1 ? true : false}
+          >
+            <Button.Content hidden>Cart</Button.Content>
+            <Button.Content visible>
+              <Icon name="shop" />
+            </Button.Content>
+          </Button>
+        }
+      />
     </div>
   );
 

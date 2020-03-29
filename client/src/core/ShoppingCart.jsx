@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
 import { Link } from "react-router-dom";
 import {
   Grid,
@@ -14,10 +15,10 @@ import {
 import styled from "styled-components";
 
 /**Custom imports */
+
 import Layout from "../layout/Layout";
 import CheckoutCard from "./CheckoutCard";
-import { getCartItems, addAddress, getAddress } from "./cartHelper";
-import { isAuthenticated, updateUserAddress } from "../auth";
+import { UPDATE_ADDRESS, RESET_FLAGS } from "../store/actions/authAction";
 
 /**
  * Styling elements with styled-components
@@ -28,9 +29,13 @@ const GridColumnUI = styled(Grid.Column)`
 `;
 
 const ShoppingCart = props => {
+  const dispatch = useDispatch();
+  const { user, token, address: storedAddress, cart: items } = useSelector(state => ({
+    ...state.authReducer,
+    ...state.cartReducer
+  }));
+
   const [activeIndex, setActiveIndex] = useState(0);
-  const [items, setItems] = useState([]);
-  const [run, setRun] = useState(false);
   const [hasAddress, sethasAddress] = useState(false);
   const [address, setAddress] = useState({
     error: false,
@@ -40,18 +45,31 @@ const ShoppingCart = props => {
     zip: "",
     country: ""
   });
-  const { user, token } = isAuthenticated() && isAuthenticated();
 
   useEffect(() => {
-    setItems(getCartItems());
-
-    const storedAddress = getAddress();
     if (storedAddress) {
       setAddress({ ...address, ...storedAddress, error: false });
       sethasAddress(true);
-    } else setAddress({ ...address, error: false });
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [run]);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      resetFlags();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  const resetFlags = () => {
+    dispatch({
+      type: RESET_FLAGS
+    });
+  };
+
+  const isAuthenticated = () => {
+    if (user && token) return true;
+    else return false;
+  };
 
   const calculateTotal = () => {
     if (items.length > 0) {
@@ -80,7 +98,17 @@ const ShoppingCart = props => {
       props.history.push("/payment");
       return;
     }
-    saveAddress();
+  };
+
+  const updateUserAddress = newAddress => {
+    dispatch({
+      type: UPDATE_ADDRESS,
+      payload: {
+        address: newAddress,
+        userId: user._id,
+        token
+      }
+    });
   };
 
   const saveAddress = async () => {
@@ -88,9 +116,12 @@ const ShoppingCart = props => {
       //save address to back end
       const { error, ...newAddress } = address;
       //handle errors here
-      const newUser = await updateUserAddress(newAddress, user._id, token);
-      const { updatedAt, createdAt, ...newSavedAddress } = newUser.address;
-      addAddress(newSavedAddress, props.history.push("/payment"));
+      console.log(newAddress);
+
+      updateUserAddress(newAddress);
+      sethasAddress(true);
+
+      //  props.history.push("/payment");
     } else {
       setAddress({ ...address, error: true });
     }
@@ -115,9 +146,7 @@ const ShoppingCart = props => {
   };
 
   const showCartItems = () => {
-    return items.map(product => (
-      <CheckoutCard run={run} setRun={setRun} key={product._id} product={product} />
-    ));
+    return items.map(product => <CheckoutCard key={product._id} product={product} />);
   };
 
   const showError = () => (
@@ -186,7 +215,7 @@ const ShoppingCart = props => {
           onChange={handleChange}
         />
 
-        <Button fluid color="red" onClick={handleSubmit} content="Checkout" />
+        <Button fluid color="blue" onClick={saveAddress} content="Save Address" />
       </Segment>
     </Form>
   );

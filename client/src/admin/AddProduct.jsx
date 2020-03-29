@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { useSelector } from "react-redux";
 import { Link, Redirect } from "react-router-dom";
 import queryString from "query-string";
 import styled from "styled-components";
@@ -20,9 +21,9 @@ import {
 import { mediaUI as media } from "../utils/mediaQueriesBuilder";
 import Layout from "../layout/Layout";
 import DashboardLayout from "../layout/DashboardLayout";
-import { isAuthenticated } from "../auth";
 import { createProduct, updateProduct, getCategories, getProduct } from "../admin/apiAdmin";
-import { ButtonContainer } from "../common/components/customComponents";
+
+import { ButtonContainer, LabelCustom } from "../common/components/customComponents";
 import useFocus from "../common/hooks/useFocus";
 import { validateProduct } from "../common/validation/validate";
 import useForm from "../common/hooks/useForm";
@@ -55,10 +56,11 @@ const initialState = {
 };
 
 const AddProduct = props => {
-  const {
-    user: { _id: userId },
-    token
-  } = isAuthenticated();
+  const { user, token } = useSelector(state => ({
+    ...state.authReducer
+  }));
+
+  const { _id: userId } = user ? user : null;
 
   /**input ref for product name. */
   const [inputRef, setInputFocus] = useFocus();
@@ -256,6 +258,7 @@ const AddProduct = props => {
       <Form size="large" noValidate>
         {shouldRedirect()}
         <Segment stacked>
+          <LabelCustom>Product</LabelCustom>
           <Input
             fluid
             placeholder="Product name"

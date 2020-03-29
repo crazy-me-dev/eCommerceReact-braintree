@@ -5,22 +5,20 @@
  */
 
 import React, { useState } from "react";
+import { useSelector, useDispatch } from "react-redux";
 import { Label } from "semantic-ui-react";
 import classNames from "classnames";
 import styled from "styled-components";
 import { withRouter, Link } from "react-router-dom";
 
 //custom imports
-import { signout, isAuthenticated } from "../auth";
-import { getCartCount } from "../core/cartHelper";
 import { colorPrimary, colorGrey6 } from "../utils/variables";
-
 import { mediaUI as media } from "../utils/mediaQueriesBuilder";
 import { ReactComponent as BurgerIcon } from "../images/svgs/menu.svg";
+import { SIGN_OUT } from "../store/actions/authAction";
 
 // once user scrolls pass header section, navbar sticks at top and is blue
 const Nav = styled.nav`
-  /* position: fixed; */
   left: 0;
   right: 0;
   z-index: 999;
@@ -29,7 +27,7 @@ const Nav = styled.nav`
   box-shadow: "0 .1rem .15rem rgba(0,0,0,.3)";
 `;
 
-// nav becomes collapsible via toggle button if screen is small
+// nav is  collapsible if screen is small
 const Wrapper = styled.div`
   position: relative;
   display: flex;
@@ -132,7 +130,6 @@ const Toggler = styled.button`
 
 const Item = styled.li`
   position: relative;
-  /* media */
   width: 100%;
   :not(:last-child) {
     margin-bottom: 2rem;
@@ -208,7 +205,6 @@ const Button = styled.a`
 `;
 
 const LabelUI = styled(Label)`
-  /* media */
   transform: translateX(-2.3rem);
 
   ${media.tablet`
@@ -219,13 +215,26 @@ const LabelUI = styled(Label)`
 //------------------------------------------------------------------------------
 
 const Menu = ({ history }) => {
-  const { user } = isAuthenticated();
+  const dispatch = useDispatch();
+  const { user, cart } = useSelector(state => ({
+    ...state.authReducer,
+    ...state.cartReducer
+  }));
   const [isToggleOn, setIsToggleOn] = useState(false);
 
   //display and hides the menu on mobile devices
   const toggleCollapsible = show => {
     if (show && isToggleOn) setIsToggleOn(!show);
     else setIsToggleOn(show);
+  };
+
+  const handleSubmit = () => {
+    dispatch({
+      type: SIGN_OUT
+    });
+  };
+  const getCartCount = () => {
+    return (cart && cart.length) || 0;
   };
 
   return (
@@ -286,15 +295,7 @@ const Menu = ({ history }) => {
             )}
             {user && (
               <Item>
-                <Button
-                  onClick={() => {
-                    signout(() => {
-                      history.push("/");
-                    });
-                  }}
-                >
-                  Signout
-                </Button>
+                <Button onClick={handleSubmit}>Signout</Button>
               </Item>
             )}
           </div>

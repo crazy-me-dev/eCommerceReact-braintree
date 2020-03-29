@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
 import { Link, Redirect } from "react-router-dom";
 import {
   Container,
@@ -15,7 +16,6 @@ import {
 //custom imports
 import Layout from "../layout/Layout";
 import DashboardLayout from "../layout/DashboardLayout";
-import { isAuthenticated } from "../auth";
 import { createCategory, getCategory, updateCategory } from "../admin/apiAdmin";
 import { ButtonContainer, LabelCustom } from "../common/components/customComponents";
 import useFocus from "../common/hooks/useFocus";
@@ -29,10 +29,10 @@ const AddCategory = props => {
   const [isUpdating, setIsUpdating] = useState(false);
   const [redirect, setRedirect] = useState(false);
 
-  const {
-    user: { _id: userId },
-    token
-  } = isAuthenticated();
+  const { user, token } = useSelector(state => ({
+    ...state.authReducer
+  }));
+  const { _id: userId } = user ? user : null;
 
   const load = async () => {
     const categoryId = props.match.params.categoryId ? props.match.params.categoryId : null;

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
 import { Link, Redirect } from "react-router-dom";
 import { useLastLocation } from "react-router-last-location";
 import {
@@ -18,15 +19,13 @@ import moment from "moment";
 import Layout from "../layout/Layout";
 import DashboardLayout from "../layout/DashboardLayout";
 import { ButtonContainer } from "../common/components/customComponents";
-import { isAuthenticated } from "../auth";
 import { getSingleOrder, getStatusValues, updateStatusValues } from "./apiAdmin";
 
 const OrderDetail = props => {
-  const {
-    user: { _id: userId, role },
-    token
-  } = isAuthenticated();
-
+  const { user: authUser, token } = useSelector(state => ({
+    ...state.authReducer
+  }));
+  const { _id: userId, role } = authUser ? authUser : null;
   const lastLocation = useLastLocation();
 
   const [order, setOrder] = useState({});
