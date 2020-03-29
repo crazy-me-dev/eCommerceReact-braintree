@@ -46,8 +46,17 @@ exports.update = async (req, res) => {
     { new: true }
   );
 
+  // since Mongoose doesn't apply for virtuals, middlewares, settles and so on with findByIdAndUpdate()
+  // we update the password manually and then save it.
+  if (req.body.password) {
+    user.password = req.body.password;
+    await user.save();
+  }
+
   user.hashedPassword = undefined;
   user.salt = undefined;
 
-  res.json(user);
+  //return response with user and token
+  const { _id, name, email, role, address, history } = user;
+  res.json({ user: { _id, name, email, role, address } });
 };
