@@ -15,7 +15,7 @@ sagaMiddleware.run(mySaga);
 
 ReactDOM.render(
   <Provider store={store}>
-    <PersistGate loading={true} persistor={persistor}>
+    <PersistGate loading={null} persistor={persistor}>
       <Routes />
     </PersistGate>
   </Provider>,
