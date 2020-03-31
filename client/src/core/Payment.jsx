@@ -22,6 +22,7 @@ import { EMPTY_CART } from "../store/actions/cartAction";
 import CheckoutCard from "./CheckoutCard";
 import Layout from "../layout/Layout";
 import { getBraintreeClientToken, processPayment, createOrder } from "./apiCore";
+
 import { termsOfService } from "../common/staticContent";
 import { ButtonLink } from "../common/components/customComponents";
 
@@ -34,6 +35,8 @@ const Title = styled.p`
   padding-top: 1rem;
   font-size: 1.4rem;
 `;
+
+
 
 const Checkout = props => {
   const dispatch = useDispatch();
