@@ -1,5 +1,6 @@
 {
   "name": "ecommerce",
+  "author": "Chris Jorge",
   "jest": {
     "verbose": true,
     "testURL": "http://localhost/",
@@ -21,7 +22,6 @@
     "test": "jest --watchAll --verbose  --runInBand --coverage"
   },
   "keywords": [],
-  "author": "",
   "license": "ISC",
   "dependencies": {
     "@hapi/joi": "^16.1.7",
