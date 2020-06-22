@@ -1,6 +1,6 @@
 {
   "name": "ecommerce",
-  "author": "Chris Jorge",
+  "author": "Chris Chen",
   "jest": {
     "verbose": true,
     "testURL": "http://localhost/",
